@@ -66,6 +66,9 @@ def parse_argv(argv):
     parser.add_argument('-v', '--version', action='store_true', help='Display the version and exit')
     args = parser.parse_args(argv)
 
+    if args.version:
+        return args
+
     if args.tls and args.ssl:
         parser.error("Cannot use --ssl and --tls together")
 
