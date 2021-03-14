@@ -9,7 +9,7 @@ with open('README.md') as f:
 
 setup(
     name='smtpc',
-    version='0.0.1',
+    version='0.1.0',
     description='',
     long_description=readme,
     long_description_content_type='text/markdown',
