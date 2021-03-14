@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 structlog = "*"
+fileperms = "*"
+toml = "*"
 
 [dev-packages]
 versionner = "*"

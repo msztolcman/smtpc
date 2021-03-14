@@ -1,3 +1,4 @@
+import argparse
 import enum
 import logging
 import smtplib
@@ -7,12 +8,14 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Optional, List, Union
 
-import argparse
 import structlog
 
 from . import __version__
+from .config import ensure_config_files, Profiles, Profile, PROFILES_FILE, Config
 
 logger = structlog.get_logger()
+PROFILES: Optional[Profiles] = None
+CONFIG: Optional[Config] = None
 
 
 class ContentType(enum.Enum):
@@ -25,6 +28,11 @@ def parse_argv(argv):
     content_type_choices = [ContentType.PLAIN.value, ContentType.HTML.value]
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('--profile', '-P', choices=PROFILES.keys(),
+        help='Get set of connection details (--host, --port, --login, --password etc) from config file.')
+    parser.add_argument('--save-profile', help='Save connection details')
+    parser.add_argument('--list-profiles', action='store_true', help='List known profiles names and exit')
+    parser.add_argument('--edit-profiles', action='store_true', help='Run $EDITOR with profiles files')
     parser.add_argument('--login', '-l', help='Login for SMTP authentication. Required if --password was given.')
     parser.add_argument('--password', '-p', help='Password for SMTP authentication. Required if --login was given.')
     parser.add_argument('--host', '-s', default='127.0.0.1',
@@ -66,7 +74,7 @@ def parse_argv(argv):
     parser.add_argument('-v', '--version', action='store_true', help='Display the version and exit')
     args = parser.parse_args(argv)
 
-    if args.version:
+    if args.version or args.list_profiles or args.edit_profiles:
         return args
 
     if args.tls and args.ssl:
@@ -196,8 +204,21 @@ def send_message(*,
     address_to: Optional[List[str]],
     address_cc: Optional[List[str]],
     address_bcc: Optional[List[str]],
-    message: Optional[Union[MIMEBase, str]]
+    message: Optional[Union[MIMEBase, str]],
+    profile: Optional[Profile]
 ):
+    if profile:
+        logger.debug('using connection details from profile', profile=profile.name)
+        login = profile.login
+        password = profile.password
+        host = profile.host
+        port = profile.port
+        ssl = profile.ssl
+        tls = profile.tls
+        connection_timeout = profile.connection_timeout
+        identify_as = profile.identify_as
+        source_address = profile.source_address
+
     if ssl:
         logger.debug('connecting using ssl', connection_timeout=connection_timeout,
             source_address=source_address)
@@ -213,7 +234,7 @@ def send_message(*,
         smtp.set_debuglevel(debug_level - 1)
 
     try:
-        # HACK: connect is not setting smtp._host, then ssl/tls will not work :/
+        # HACK: connect doesn't set smtp._host, then ssl/tls will not work :/
         smtp._host = host
         smtp_code, smtp_message = smtp.connect(host, port, source_address=source_address)
         logger.debug('connected', host=host, port=port, source_address=source_address,
@@ -244,13 +265,62 @@ def send_message(*,
         smtp.quit()
 
 
+def list_profiles(debug_level):
+    print('Known profiles:')
+    for name, profile in PROFILES.items():
+        if debug_level > 0:
+            data = profile.to_dict()
+            if debug_level == 1:
+                data['password'] = '***'
+            print(f"- {name} ({data})")
+        else:
+            print(f"- {name}")
+
+
+def edit_profiles():
+    import os
+    import subprocess
+    cmd = [
+        os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim',
+        str(PROFILES_FILE),
+    ]
+    subprocess.run(cmd)
+
+
 def main():
+    ensure_config_files()
+
+    global PROFILES
+    PROFILES = Profiles.read()
+
     args = parse_argv(sys.argv[1:])
     configure_logger(args.debug > 0)
 
     if args.version:
         print('SMTPc %s' % __version__)
         sys.exit(0)
+
+    if args.list_profiles:
+        list_profiles(args.debug)
+        sys.exit(0)
+
+    if args.edit_profiles:
+        edit_profiles()
+        sys.exit(0)
+
+    if not args.profile and args.save_profile:
+        PROFILES.add(Profile(
+            name=args.save_profile,
+            login=args.login,
+            password=args.password,
+            host=args.host,
+            port=args.port,
+            ssl=args.ssl,
+            tls=args.tls,
+            connection_timeout=args.connection_timeout,
+            identify_as=args.identify_as,
+            source_address=args.source_address,
+        ))
 
     if args.raw_body:
         message = args.body
@@ -268,8 +338,14 @@ def main():
             headers=args.headers,
         )
 
+    if args.profile:
+        profile = PROFILES[args.profile]
+    else:
+        profile = None
+
     try:
         send_message(
+            profile=profile,
             connection_timeout=args.connection_timeout,
             source_address=args.source_address,
             debug_level=args.debug,

@@ -2,6 +2,8 @@ from setuptools import setup, find_packages
 
 requirements = [
     'structlog',
+    'fileperms',
+    'toml',
 ]
 
 with open('README.md') as f:

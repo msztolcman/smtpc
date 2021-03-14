@@ -22,10 +22,11 @@ Features
 * Easy build email message as `text/plain`, `text/html` or full MIME
   message (`multipart/alternative`)
 * Handle SMTP authentication, SSL and TLS
+* Profiles allows you to use predefined SMTP servers
 * Allow use different from/to email addresses for SMTP session and
   email headers
-* Allow to specify own headers
-* Allow to use particular IP address in case when your host has more then one
+* Allow specifying own headers
+* Allow using particular IP address in case when your host has more then one
 * It's all Python!
 
 Installation
@@ -71,6 +72,10 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 
 ChangeLog
 ---------
+
+### v0.2.0
+
+* added profiles
 
 ### v0.1.1
 
