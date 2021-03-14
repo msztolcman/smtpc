@@ -27,7 +27,7 @@ class ContentType(enum.Enum):
 def parse_argv(argv):
     content_type_choices = [ContentType.PLAIN.value, ContentType.HTML.value]
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser('SMTPc')
     parser.add_argument('--profile', '-P', choices=PROFILES.keys(),
         help='Get set of connection details (--host, --port, --login, --password etc) from config file.')
     parser.add_argument('--save-profile', help='Save connection details')
@@ -71,10 +71,10 @@ def parse_argv(argv):
     parser.add_argument('--source-address', help='Source IP address to use when connecting.')
     parser.add_argument('--debug', '-D', action='count', default=0,
         help='Enable debug messages. Can be used multiple times to increase debug level.')
-    parser.add_argument('-v', '--version', action='store_true', help='Display the version and exit')
+    parser.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}', help='Display the version and exit')
     args = parser.parse_args(argv)
 
-    if args.version or args.list_profiles or args.edit_profiles:
+    if args.list_profiles or args.edit_profiles:
         return args
 
     if args.tls and args.ssl:
@@ -295,10 +295,6 @@ def main():
 
     args = parse_argv(sys.argv[1:])
     configure_logger(args.debug > 0)
-
-    if args.version:
-        print('SMTPc %s' % __version__)
-        sys.exit(0)
 
     if args.list_profiles:
         list_profiles(args.debug)
