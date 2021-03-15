@@ -1,4 +1,5 @@
 .*.swp
+/.config
 *.pyc
 /*.pid
 /.idea/
