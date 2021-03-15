@@ -132,6 +132,10 @@ def parse_argv(argv):
     def setup_connection_args(args):
         if args.tls and args.ssl:
             parser.error("Cannot use --ssl and --tls together")
+
+        if args.host and args.host.startswith(('smtp://', 'smtps://')):
+            args.host = args.host.replace('smtp://', '').replace('smtps://', '')
+
         if ':' in args.host:
             host, port = args.host.split(':', 1)
             args.host = host
