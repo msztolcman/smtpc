@@ -73,6 +73,10 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 ChangeLog
 ---------
 
+### v0.3.0
+
+* using commands now instead of dozens of CLI arguments
+
 ### v0.2.0
 
 * added profiles

@@ -20,100 +20,142 @@ def parse_argv(argv):
     content_type_choices = [ContentType.PLAIN.value, ContentType.HTML.value]
 
     parser = argparse.ArgumentParser('SMTPc')
-    parser.add_argument('--profile', '-P', choices=PROFILES.keys(),
-        help='Get set of connection details (--host, --port, --login, --password etc) from config file.')
-    parser.add_argument('--save-profile', help='Save connection details')
-    parser.add_argument('--list-profiles', action='store_true', help='List known profiles names and exit')
-    parser.add_argument('--edit-profiles', action='store_true', help='Run $EDITOR with profiles files')
-    parser.add_argument('--login', '-l', help='Login for SMTP authentication. Required if --password was given.')
-    parser.add_argument('--password', '-p', help='Password for SMTP authentication. Required if --login was given.')
-    parser.add_argument('--host', '-s', default='127.0.0.1',
-        help='SMTP server. Can be also together with port, ie: 127.0.0.1:465.')
-    parser.add_argument('--port', '-o', type=int, help='Port for SMTP connection. Default: 25.')
-    parser.add_argument('--subject', '-j', help='Subject for email.')
-    parser.add_argument('--body', '-b',
-        help='Body of email. Has less priority then --body-text and --body-html.')
-    parser.add_argument('--body-type', choices=content_type_choices, help='Typehint for email Content-Type. ')
-    parser.add_argument('--body-plain', help='Text part of the message for text/plain version.')
-    parser.add_argument('--body-html', help='Text part of the message for text/html version.')
-    parser.add_argument('--raw-body', action='store_true',
-        help='Do not try to generate email body with headers, use content from --body as whole message body.')
-    parser.add_argument('--envelope-from', '-F',
-        help='Sender address for SMTP session. If missing, then address from --from is used.')
-    parser.add_argument('--from', '-f', dest='address_from',
-        help='Sender addres. Will be used for SMTP session if --envelope-from is missing.')
-    parser.add_argument('--envelope-to', '-T', action='append', default=[],
-        help='Email recpients for SMTP session. Can be used multiple times. '
-             'If used, then --to, -cc and --bcc are not used for SMTP session.')
-    parser.add_argument('--to', '-t', dest='address_to', action='append', default=[],
-        help='Email recipients for To header. Used in SMTP session if --envelope-to is missing.')
-    parser.add_argument('--cc', '-c', dest='address_cc', action='append', default=[],
-        help='Email recipients for Cc header. Used in SMTP session if --envelope-to is missing.')
-    parser.add_argument('--bcc', '-C', dest='address_bcc', action='append', default=[],
-        help='Used in SMTP session if --envelope-to is missing. Will not be included in generated message.')
-    parser.add_argument('--tls', action='store_true', help='Force upgrade connection to TLS. Default if --port is 587.')
-    parser.add_argument('--no-tls', action='store_true', help='Force disable TLS upgrade.')
-    parser.add_argument('--ssl', action='store_true', help='Force use SSL connection. Default if --port is 465.')
-    parser.add_argument('--no-ssl', action='store_true', help='Force disable SSL connection.')
-    parser.add_argument('--header', '-H', dest='headers', action='append', default=[],
-        help='Additional headers in format: HeaderName=HeaderValue. Can be used multiple times.')
-    parser.add_argument('--connection-timeout', type=int, default=30, help='')
-    parser.add_argument('--session-timeout', type=int, help='')
-    parser.add_argument('--identify-as', help='Domain used for SMTP identification in EHLO/HELO command.')
-    parser.add_argument('--source-address', help='Source IP address to use when connecting.')
     parser.add_argument('--debug', '-D', action='count', default=0,
         help='Enable debug messages. Can be used multiple times to increase debug level.')
-    parser.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}', help='Display the version and exit')
+    parser.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}',
+        help='Display the version and exit')
+
+    sub = parser.add_subparsers(dest='command')
+
+    p_send = sub.add_parser('send', help="")
+    p_send.add_argument('--profile', '-P', choices=PROFILES.keys(),
+        help='Get set of connection details (--host, --port, --login, --password etc) from config file.')
+
+    p_send.add_argument('--login', '-l', help='Login for SMTP authentication. Required if --password was given.')
+    p_send.add_argument('--password', '-p',
+        help='Password for SMTP authentication. Required if --login was given.')
+    p_send.add_argument('--host', '-s', default='127.0.0.1',
+        help='SMTP server. Can be also together with port, ie: 127.0.0.1:465.')
+    p_send.add_argument('--port', '-o', type=int, help='Port for SMTP connection. Default: 25.')
+    p_send.add_argument('--tls', action='store_true',
+        help='Force upgrade connection to TLS. Default if --port is 587.')
+    p_send.add_argument('--no-tls', action='store_true', help='Force disable TLS upgrade.')
+    p_send.add_argument('--ssl', action='store_true', help='Force use SSL connection. Default if --port is 465.')
+    p_send.add_argument('--no-ssl', action='store_true', help='Force disable SSL connection.')
+    p_send.add_argument('--connection-timeout', type=int, default=30, help='')
+    p_send.add_argument('--session-timeout', type=int, help='')
+    p_send.add_argument('--identify-as', help='Domain used for SMTP identification in EHLO/HELO command.')
+    p_send.add_argument('--source-address', help='Source IP address to use when connecting.')
+
+    p_send.add_argument('--subject', '-j', help='Subject for email.')
+    p_send.add_argument('--body', '-b',
+        help='Body of email. Has less priority then --body-text and --body-html.')
+    p_send.add_argument('--body-type', choices=content_type_choices, help='Typehint for email Content-Type. ')
+    p_send.add_argument('--body-plain', help='Text part of the message for text/plain version.')
+    p_send.add_argument('--body-html', help='Text part of the message for text/html version.')
+    p_send.add_argument('--raw-body', action='store_true',
+        help='Do not try to generate email body with headers, use content from --body as whole message body.')
+    p_send.add_argument('--envelope-from', '-F',
+        help='Sender address for SMTP session. If missing, then address from --from is used.')
+    p_send.add_argument('--from', '-f', dest='address_from',
+        help='Sender addres. Will be used for SMTP session if --envelope-from is missing.')
+    p_send.add_argument('--envelope-to', '-T', action='append', default=[],
+        help='Email recpients for SMTP session. Can be used multiple times. '
+             'If used, then --to, -cc and --bcc are not used for SMTP session.')
+    p_send.add_argument('--to', '-t', dest='address_to', action='append', default=[],
+        help='Email recipients for To header. Used in SMTP session if --envelope-to is missing.')
+    p_send.add_argument('--cc', '-c', dest='address_cc', action='append', default=[],
+        help='Email recipients for Cc header. Used in SMTP session if --envelope-to is missing.')
+    p_send.add_argument('--bcc', '-C', dest='address_bcc', action='append', default=[],
+        help='Used in SMTP session if --envelope-to is missing. Will not be included in generated message.')
+    p_send.add_argument('--header', '-H', dest='headers', action='append', default=[],
+        help='Additional headers in format: HeaderName=HeaderValue. Can be used multiple times.')
+
+    p_profile = sub.add_parser('profile', help="")
+    p_profile_sub = p_profile.add_subparsers(dest='subcommand')
+
+    p_profile_edit = p_profile_sub.add_parser('edit', help='')
+    p_profile_list = p_profile_sub.add_parser('list', help='')
+    p_profile_add = p_profile_sub.add_parser('add', help='')
+    p_profile_add.add_argument('name', nargs=1, help='')
+    p_profile_add.add_argument('--login', '-l', help='Login for SMTP authentication. Required if --password was given.')
+    p_profile_add.add_argument('--password', '-p', help='Password for SMTP authentication. Required if --login was given.')
+    p_profile_add.add_argument('--host', '-s', default='127.0.0.1',
+        help='SMTP server. Can be also together with port, ie: 127.0.0.1:465.')
+    p_profile_add.add_argument('--port', '-o', type=int, help='Port for SMTP connection. Default: 25.')
+    p_profile_add.add_argument('--tls', action='store_true', help='Force upgrade connection to TLS. Default if --port is 587.')
+    p_profile_add.add_argument('--no-tls', action='store_true', help='Force disable TLS upgrade.')
+    p_profile_add.add_argument('--ssl', action='store_true', help='Force use SSL connection. Default if --port is 465.')
+    p_profile_add.add_argument('--no-ssl', action='store_true', help='Force disable SSL connection.')
+    p_profile_add.add_argument('--connection-timeout', type=int, default=30, help='')
+    p_profile_add.add_argument('--session-timeout', type=int, help='')
+    p_profile_add.add_argument('--identify-as', help='Domain used for SMTP identification in EHLO/HELO command.')
+    p_profile_add.add_argument('--source-address', help='Source IP address to use when connecting.')
+
     args = parser.parse_args(argv)
 
-    if args.list_profiles or args.edit_profiles:
-        return args
+    def setup_connection_args(args):
+        if args.tls and args.ssl:
+            parser.error("Cannot use --ssl and --tls together")
+        if ':' in args.host:
+            host, port = args.host.split(':', 1)
+            args.host = host
+            if not args.port:
+                args.port = int(port)
 
-    if args.tls and args.ssl:
-        parser.error("Cannot use --ssl and --tls together")
-
-    if ':' in args.host:
-        host, port = args.host.split(':', 1)
-        args.host = host
         if not args.port:
-            args.port = int(port)
+            args.port = 25
 
-    if not args.port:
-        args.port = 25
+        if not args.ssl and not args.tls:
+            if args.port == 465 and not args.no_ssl:
+                args.ssl = True
+            elif args.port == 587 and not args.no_tls:
+                args.tls = True
 
-    if not args.ssl and not args.tls:
-        if args.port == 465 and not args.no_ssl:
-            args.ssl = True
-        elif args.port == 587 and not args.no_tls:
-            args.tls = True
+        if (args.login and not args.password) or (not args.login and args.password):
+            parser.error("Required both or none: --login, --password")
 
-    if (args.login and not args.password) or (not args.login and args.password):
-        parser.error("Required both or none: --login, --password")
+    def setup_message_args(args):
+        if not args.envelope_from and not args.address_from:
+            parser.error("Any from (--envelope-from or --from) required")
 
-    if not args.envelope_from and not args.address_from:
-        parser.error("Any from (--envelope-from or --address-from) required")
+        if not args.envelope_to and not args.address_to and not args.address_cc and not args.address_bcc:
+            parser.error("Any from (--envelope-to,--to, --cc, --bcc) required")
 
-    if not args.envelope_to and not args.address_to and not args.address_cc and not args.address_bcc:
-        parser.error("Any from (--envelope-to,--address-to, --address-cc, --address-bcc) required")
-
-    if args.body_type == 'plain':
-        args.body_type = ContentType.PLAIN
-    elif args.body_type == 'html':
-        args.body_type = ContentType.HTML
-    else:
-        # no body_type specified
-        if args.body_plain and args.body_html:
-            args.body_type = ContentType.ALTERNATIVE
-        elif args.body_plain and not args.body_html:
+        if args.body_type == 'plain':
             args.body_type = ContentType.PLAIN
-        elif not args.body_plain and args.body_html:
+        elif args.body_type == 'html':
             args.body_type = ContentType.HTML
         else:
-            args.body_type = ContentType.PLAIN
+            # no body_type specified
+            if args.body_plain and args.body_html:
+                args.body_type = ContentType.ALTERNATIVE
+            elif args.body_plain and not args.body_html:
+                args.body_type = ContentType.PLAIN
+            elif not args.body_plain and args.body_html:
+                args.body_type = ContentType.HTML
+            else:
+                args.body_type = ContentType.PLAIN
 
-    for header in args.headers:
-        if '=' not in header:
-            parser.error(f"Invalid header syntax: {header}. Required syntax: HeaderName=HeaderValue")
+        for header in args.headers:
+            if '=' not in header:
+                parser.error(f"Invalid header syntax: {header}. Required syntax: HeaderName=HeaderValue")
+
+    if args.command == 'send':
+        setup_connection_args(args)
+        setup_message_args(args)
+
+    elif args.command == 'profile':
+        if args.subcommand == 'add':
+            setup_connection_args(args)
+        elif not args.subcommand:
+            p_profile.print_help()
+            sys.exit()
+    elif args.command == 'message':
+        setup_message_args(args)
+    else:
+        parser.print_help()
+        sys.exit()
 
     return args
 
@@ -235,26 +277,16 @@ def edit_profiles():
     subprocess.run(cmd)
 
 
-def main():
-    ensure_config_files()
-
-    global PROFILES
-    PROFILES = Profiles.read()
-
-    args = parse_argv(sys.argv[1:])
-    configure_logger(args.debug > 0)
-
-    if args.list_profiles:
+def handle_profile(args):
+    if args.subcommand == 'list':
         list_profiles(args.debug)
-        sys.exit(0)
-
-    if args.edit_profiles:
+        sys.exit()
+    elif args.subcommand == 'edit':
         edit_profiles()
-        sys.exit(0)
-
-    if not args.profile and args.save_profile:
+        sys.exit()
+    else:
         PROFILES.add(Profile(
-            name=args.save_profile,
+            name=args.name[0],
             login=args.login,
             password=args.password,
             host=args.host,
@@ -265,7 +297,10 @@ def main():
             identify_as=args.identify_as,
             source_address=args.source_address,
         ))
+        logger.info('Profile saved', profile=args.name[0])
 
+
+def handle_send(args):
     if args.raw_body:
         message = args.body
     else:
@@ -310,5 +345,20 @@ def main():
         )
     except (smtplib.SMTPSenderRefused, smtplib.SMTPAuthenticationError) as exc:
         logger.error(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
+
+
+def main():
+    ensure_config_files()
+
+    global PROFILES
+    PROFILES = Profiles.read()
+
+    args = parse_argv(sys.argv[1:])
+    configure_logger(args.debug > 0)
+
+    if args.command == 'profile':
+        handle_profile(args)
+    elif args.command == 'send':
+        handle_send(args)
 
     sys.exit(0)
