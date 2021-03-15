@@ -9,12 +9,11 @@ import structlog
 import toml.decoder
 
 from . import __version__, EMPTY
-from .config import ensure_config_files, \
-    PredefinedProfiles, PredefinedProfile, PREDEFINED_PROFILES_FILE, \
-    PredefinedMessages, PredefinedMessage, PREDEFINED_MESSAGES_FILE, \
-    Config
+from .config import ensure_config_files, PREDEFINED_PROFILES_FILE, PREDEFINED_MESSAGES_FILE, Config
 from .defaults import DEFAULTS_VALUES_PROFILE, DEFAULTS_VALUES_MESSAGE
 from .message import ContentType, build_message
+from .predefined_messages import PredefinedMessages, PredefinedMessage
+from .predefined_profiles import PredefinedProfiles, PredefinedProfile
 
 logger = structlog.get_logger()
 CONFIG: Optional[Config] = None
@@ -40,6 +39,7 @@ def parse_argv(argv):
     p_send.add_argument('--message', '-M', choices=PREDEFINED_MESSAGES.keys(),
         help='Get set of message details (--subject, --from, --to, --cc etc) from config file.')
 
+    # SEND command - profile configuration stuff
     p_send.add_argument('--login', '-l', default=EMPTY,
         help='Login for SMTP authentication. Required if --password was given.')
     p_send.add_argument('--password', '-p', default=EMPTY,
@@ -61,6 +61,7 @@ def parse_argv(argv):
     p_send.add_argument('--source-address', default=EMPTY,
         help='Source IP address to use when connecting.')
 
+    # SEND command - message related stuff
     p_send.add_argument('--subject', '-j', default=EMPTY,
         help='Subject for email.')
     p_send.add_argument('--body', '-b', default=EMPTY,

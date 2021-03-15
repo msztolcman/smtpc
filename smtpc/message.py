@@ -4,8 +4,8 @@ from email.mime.text import MIMEText
 from typing import Optional, List
 
 from . import EMPTY, ContentType
-from .config import PredefinedMessage
 from .defaults import DEFAULTS_VALUES_MESSAGE
+from .predefined_messages import PredefinedMessage
 
 
 def build_message(*,
