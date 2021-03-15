@@ -37,21 +37,20 @@ class PredefinedProfile:
         self.source_address = source_address
 
     def to_dict(self):
-        r = {
-            k: getattr(self, k) if not isinstance(getattr(self, k), enum.Enum) else getattr(self, k).value
-            for k in self.__slots__
-            if k != 'name'
-        }
-        return r
+        result = {}
+        for key in self.__slots__:
+            if key == 'name':
+                continue
+            value = getattr(self, key)
+            if isinstance(value, enum.Enum):
+                value = value.value
+            result[key] = value
+        return result
 
     def __str__(self):
-        d = []
-        for k in self.__slots__:
-            if k == 'password':
-                d.append(f"{k}=***")
-            else:
-                d.append(f"{k}={getattr(self, k)}")
-        return '<PredefinedProfile ' + ', '.join(d) + '>'
+        d = self.to_dict()
+        d['password'] = '***'
+        return '<PredefinedProfile ' + ', '.join([f'{k}={v}' for k, v in d.items()]) + '>'
     __repr__ = __str__
 
 

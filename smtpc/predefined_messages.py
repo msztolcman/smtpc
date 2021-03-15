@@ -5,6 +5,7 @@ import toml
 
 from .config import PREDEFINED_MESSAGES_FILE, save_toml_file
 from .enums import ContentType
+from .utils import guess_content_type
 
 
 class PredefinedMessage:
@@ -43,18 +44,19 @@ class PredefinedMessage:
         self.headers = headers
 
     def to_dict(self):
-        r = {
-            k: getattr(self, k) if not isinstance(getattr(self, k), enum.Enum) else getattr(self, k).value
-            for k in self.__slots__
-            if k != 'name'
-        }
-        return r
+        result = {}
+        for key in self.__slots__:
+            if key == 'name':
+                continue
+            value = getattr(self, key)
+            if isinstance(value, enum.Enum):
+                value = value.value
+            result[key] = value
+        return result
 
     def __str__(self):
-        d = []
-        for k in self.__slots__:
-            d.append(f"{k}={getattr(self, k)}")
-        return '<PredefinedMessage ' + ', '.join(d) + '>'
+        d = self.to_dict()
+        return '<PredefinedMessage ' + ', '.join([f'{k}={v}' for k, v in d.items()]) + '>'
 
     __repr__ = __str__
 
@@ -82,7 +84,7 @@ class PredefinedMessages(dict):
                 body_plain=message.get('body_plain'),
                 body_html=message.get('body_html'),
                 body_raw=message.get('body_raw'),
-                body_type=ContentType(message.get('body_type')),
+                body_type=ContentType(guess_content_type(message.get('body_type'), message.get('body_plain'), message.get('body_html'))),
                 headers=message.get('headers'),
             )
 
