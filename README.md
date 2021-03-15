@@ -7,7 +7,8 @@ SMTPc
 [![say thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/marcin%40urzenia.net)
 
 SMTPc is simple SMTP client for easy mail sending. It's purpose is to help
-developers test and/or verify SMTP servers or configuration.
+developers test and/or verify SMTP servers or configuration. It's also useful if you
+are sending email of constant content from daemons or other crons.
 
 If you like this tool, just [say thanks](https://saythanks.io/to/marcin%40urzenia.net).
 
@@ -19,13 +20,14 @@ Current stable version
 Features
 --------
 
-* Easy build email message as `text/plain`, `text/html` or full MIME
+* Easily build email message as `text/plain`, `text/html` or full MIME
   message (`multipart/alternative`)
-* Handle SMTP authentication, SSL and TLS
+* Handles SMTP authentication, SSL and TLS
 * Profiles allows you to use predefined SMTP servers
-* Allow use different from/to email addresses for SMTP session and
+* Predefine messages set and use them for sending
+* Allow for using different from/to email addresses for SMTP session and
   email headers
-* Allow specifying own headers
+* Allow specifying own email headers
 * Allow using particular IP address in case when your host has more then one
 * It's all Python!
 
@@ -54,7 +56,46 @@ Python version
 How to use
 ----------
 
+First, add some account you want to use for sending. In this example we are using
+[Sendria](https://github.com/msztolcman/sendria) run on local environment:
 
+```bash
+smtpc profiles add sendria --host 127.0.0.1 --port 1025
+```
+
+You can verify:
+```bash
+smtpc profiles list
+```
+
+Now, add few messages for future use:
+
+```bash
+smtpc messages add plain --subject 'Some plain email' --body-plain 'Some plain message body' --from smtpc@example.com --to receiver@example.net
+smtpc messages add html --subject 'Some html email' --body-html 'Some <b>HTML</b> message body' --from smtpc@example.com --to receiver@example.net
+smtpc messages add alternative --subject 'Some alternative email' --body-plain 'Some plain message body' --body-html 'Some <b>HTML</b> message body' --from smtpc@example.com --to receiver@example.net
+```
+
+You can verify:
+```bash
+smtpc messages list
+```
+
+Now, send something:
+
+```bash
+smtpc send --profile sendria --message alternative
+smtpc send --profile sendria --message plain --subject 'Changed subject for plain'
+```
+In second example above, we are using predefined message `plain`, but with changed subject.
+
+Of course, if you don't want, you don't need to use predefined profiles and/or messages, you can pass them directly when sending:
+
+```bash
+smtpc send --host 127.0.0.1 --port 1025 --body-type html --subject 'Some html email' --body-html 'Some <b>HTML</b> message body' --from smtpc@example.com --to receiver@example.net
+```
+
+But it's not so funny :)
 
 Authors
 -------
@@ -72,6 +113,13 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 
 ChangeLog
 ---------
+
+### v0.4.0
+
+* BC: renamed command: `profile` -> `profiles`
+* added new command: `messages` for managing of saved email messages
+* allow to overwrite profile or message predefined options from CLI arguments
+* cleaner and more elegant code
 
 ### v0.3.0
 
