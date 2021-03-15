@@ -1,6 +1,8 @@
 import argparse
+import enum
 import logging
 import smtplib
+import socket
 import sys
 from email.mime.base import MIMEBase
 from typing import Optional, List, Union
@@ -19,6 +21,15 @@ logger = structlog.get_logger()
 CONFIG: Optional[Config] = None
 PREDEFINED_PROFILES: Optional[PredefinedProfiles] = None
 PREDEFINED_MESSAGES: Optional[PredefinedMessages] = None
+
+class ExitCodes(enum.Enum):
+    OK = 0
+    CONNECTION_ERROR = 1
+    OTHER = 2
+
+
+def exit(err_code: ExitCodes):
+    sys.exit(err_code.value)
 
 
 def parse_argv(argv):
@@ -362,9 +373,14 @@ def send_message(*,
         smtp_code, smtp_message = smtp.connect(host, port, source_address=source_address)
         logger.debug('connected', host=host, port=port, source_address=source_address,
             smtp_code=smtp_code, smtp_message=smtp_message)
+    except socket.gaierror as exc:
+        log_method = logger.exception if debug_level > 0 else logger.error
+        log_method('connection error', host=host, port=port, errno=exc.errno, message=exc.strerror)
+        exit(ExitCodes.CONNECTION_ERROR)
     except Exception as exc:
-        logger.exception('connection error', host=host, port=port, exc=exc)
-        raise exc
+        log_method = logger.exception if debug_level > 0 else logger.error
+        log_method('connection error', host=host, port=port, message=str(exc))
+        exit(ExitCodes.CONNECTION_ERROR)
 
     smtp.ehlo(identify_as)
 
@@ -382,8 +398,9 @@ def send_message(*,
     try:
         smtp.sendmail(envelope_from, envelope_to, getattr(message_body, 'as_string', lambda: message_body)())
     except smtplib.SMTPSenderRefused as exc:
-        logger.error(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
-        raise exc
+        log_method = logger.exception if debug_level > 0 else logger.error
+        log_method(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
+        exit(ExitCodes.OTHER)
     finally:
         smtp.quit()
 
@@ -435,10 +452,10 @@ def edit_messages():
 def handle_profiles(args):
     if args.subcommand == 'list':
         list_profiles(args.debug)
-        sys.exit()
+        exit(ExitCodes.OK)
     elif args.subcommand == 'edit':
         edit_profiles()
-        sys.exit()
+        exit(ExitCodes.OK)
     else:
         PREDEFINED_PROFILES.add(PredefinedProfile(
             name=args.name[0],
@@ -458,10 +475,10 @@ def handle_profiles(args):
 def handle_messages(args):
     if args.subcommand == 'list':
         list_messages()
-        sys.exit()
+        exit(ExitCodes.OK)
     elif args.subcommand == 'edit':
         edit_messages()
-        sys.exit()
+        exit(ExitCodes.OK)
     else:
         PREDEFINED_MESSAGES.add(PredefinedMessage(
             name=args.name[0],
@@ -557,4 +574,4 @@ def main():
     elif args.command == 'messages':
         handle_messages(args)
 
-    sys.exit(0)
+    exit(ExitCodes.OK)
