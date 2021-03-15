@@ -29,9 +29,9 @@ def get_config_dir() -> pathlib.Path:
 
 
 CONFIG_DIR = get_config_dir()
-PROFILES_FILE = CONFIG_DIR / 'profiles.toml'
+PREDEFINED_PROFILES_FILE = CONFIG_DIR / 'profiles.toml'
 CONFIG_FILE = CONFIG_DIR / 'config.toml'
-MESSAGES_FILE = CONFIG_DIR / 'messages.toml'
+PREDEFINED_MESSAGES_FILE = CONFIG_DIR / 'messages.toml'
 
 
 def ensure_config_files():
@@ -43,14 +43,14 @@ def ensure_config_files():
     if not CONFIG_DIR.exists():
         CONFIG_DIR.mkdir(mode=int(dir_perms), parents=True, exist_ok=True)
 
-    if not PROFILES_FILE.is_file():
-        save_toml_file(PROFILES_FILE, {'profiles': {}})
+    if not PREDEFINED_PROFILES_FILE.is_file():
+        save_toml_file(PREDEFINED_PROFILES_FILE, {'profiles': {}})
 
     if not CONFIG_FILE.is_file():
         save_toml_file(CONFIG_FILE, {'smtpc': {}})
 
-    if not MESSAGES_FILE.is_file():
-        save_toml_file(MESSAGES_FILE, {'messages': {}})
+    if not PREDEFINED_MESSAGES_FILE.is_file():
+        save_toml_file(PREDEFINED_MESSAGES_FILE, {'messages': {}})
 
 
 def save_toml_file(file: pathlib.Path, data: dict):
@@ -63,7 +63,7 @@ def save_toml_file(file: pathlib.Path, data: dict):
         toml.dump(data, fh)
 
 
-class Profile:
+class PredefinedProfile:
     __slots__ = (
         'name', 'login', 'password',
         'host', 'port', 'ssl', 'tls',
@@ -108,14 +108,14 @@ class Profile:
                 d.append(f"{k}=***")
             else:
                 d.append(f"{k}={getattr(self, k)}")
-        return '<Profile ' + ', '.join(d) + '>'
+        return '<PredefinedProfile ' + ', '.join(d) + '>'
     __repr__ = __str__
 
 
-class Profiles(dict):
+class PredefinedProfiles(dict):
     @classmethod
-    def read(cls) -> 'Profiles':
-        with PROFILES_FILE.open('r') as fh:
+    def read(cls) -> 'PredefinedProfiles':
+        with PREDEFINED_PROFILES_FILE.open('r') as fh:
             data = toml.load(fh)
 
         p = cls()
@@ -123,7 +123,7 @@ class Profiles(dict):
             return p
 
         for name, profile in data['profiles'].items():
-            p[name] = Profile(
+            p[name] = PredefinedProfile(
                 name=name,
                 login=profile.get('login'),
                 password=profile.get('password'),
@@ -138,9 +138,9 @@ class Profiles(dict):
 
         return p
 
-    def add(self, profile: Profile):
+    def add(self, profile: PredefinedProfile):
         self[profile.name] = profile
-        save_toml_file(PROFILES_FILE, {
+        save_toml_file(PREDEFINED_PROFILES_FILE, {
             'profiles': {
                 name: profile.to_dict()
                 for name, profile in self.items()
@@ -148,7 +148,7 @@ class Profiles(dict):
         })
 
 
-class Message:
+class PredefinedMessage:
     __slots__ = (
         'name', 'envelope_from', 'address_from', 'envelope_to', 'address_to', 'address_cc', 'address_bcc',
         'subject', 'body_plain', 'body_html', 'body_raw', 'body_type', 'headers',
@@ -195,15 +195,15 @@ class Message:
         d = []
         for k in self.__slots__:
             d.append(f"{k}={getattr(self, k)}")
-        return '<Message ' + ', '.join(d) + '>'
+        return '<PredefinedMessage ' + ', '.join(d) + '>'
 
     __repr__ = __str__
 
 
-class Messages(dict):
+class PredefinedMessages(dict):
     @classmethod
-    def read(cls) -> 'Messages':
-        with MESSAGES_FILE.open('r') as fh:
+    def read(cls) -> 'PredefinedMessages':
+        with PREDEFINED_MESSAGES_FILE.open('r') as fh:
             data = toml.load(fh)
 
         m = cls()
@@ -211,7 +211,7 @@ class Messages(dict):
             return m
 
         for name, message in data['messages'].items():
-            m[name] = Message(
+            m[name] = PredefinedMessage(
                 name=name,
                 envelope_from=message.get('envelope_from'),
                 address_from=message.get('address_from'),
@@ -229,9 +229,9 @@ class Messages(dict):
 
         return m
 
-    def add(self, message: Message):
+    def add(self, message: PredefinedMessage):
         self[message.name] = message
-        save_toml_file(MESSAGES_FILE, {
+        save_toml_file(PREDEFINED_MESSAGES_FILE, {
             'messages': {
                 name: message.to_dict()
                 for name, message in self.items()

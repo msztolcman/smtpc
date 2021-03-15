@@ -4,7 +4,7 @@ from email.mime.text import MIMEText
 from typing import Optional, List
 
 from . import EMPTY, ContentType
-from .config import Message
+from .config import PredefinedMessage
 from .defaults import DEFAULTS_VALUES_MESSAGE
 
 
@@ -19,7 +19,7 @@ def build_message(*,
     body_html: Optional[str] = None,
     body_plain: Optional[str] = None,
     headers: Optional[List[str]] = None,
-    message: Optional[Message] = None
+    message: Optional[PredefinedMessage] = None
 ) -> MIMEBase:
     if message:
         if subject is EMPTY:

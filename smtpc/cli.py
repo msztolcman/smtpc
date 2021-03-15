@@ -9,14 +9,17 @@ import structlog
 import toml.decoder
 
 from . import __version__, EMPTY
-from .config import ensure_config_files, Profiles, Profile, PROFILES_FILE, Config, Messages, MESSAGES_FILE, Message
+from .config import ensure_config_files, \
+    PredefinedProfiles, PredefinedProfile, PREDEFINED_PROFILES_FILE, \
+    PredefinedMessages, PredefinedMessage, PREDEFINED_MESSAGES_FILE, \
+    Config
 from .defaults import DEFAULTS_VALUES_PROFILE, DEFAULTS_VALUES_MESSAGE
 from .message import ContentType, build_message
 
 logger = structlog.get_logger()
-PROFILES: Optional[Profiles] = None
-MESSAGES: Optional[Messages] = None
 CONFIG: Optional[Config] = None
+PREDEFINED_PROFILES: Optional[PredefinedProfiles] = None
+PREDEFINED_MESSAGES: Optional[PredefinedMessages] = None
 
 
 def parse_argv(argv):
@@ -30,10 +33,11 @@ def parse_argv(argv):
 
     sub = parser.add_subparsers(dest='command')
 
+    # SEND command
     p_send = sub.add_parser('send', help="")
-    p_send.add_argument('--profile', '-P', choices=PROFILES.keys(),
+    p_send.add_argument('--profile', '-P', choices=PREDEFINED_PROFILES.keys(),
         help='Get set of connection details (--host, --port, --login, --password etc) from config file.')
-    p_send.add_argument('--message', '-M', choices=MESSAGES.keys(),
+    p_send.add_argument('--message', '-M', choices=PREDEFINED_MESSAGES.keys(),
         help='Get set of message details (--subject, --from, --to, --cc etc) from config file.')
 
     p_send.add_argument('--login', '-l', default=EMPTY,
@@ -86,6 +90,7 @@ def parse_argv(argv):
     p_send.add_argument('--header', '-H', dest='headers', action='append', default=EMPTY,
         help='Additional headers in format: HeaderName=HeaderValue. Can be used multiple times.')
 
+    # PROFILES command
     p_profiles = sub.add_parser('profiles', help="")
     p_profiles_sub = p_profiles.add_subparsers(dest='subcommand')
 
@@ -107,6 +112,7 @@ def parse_argv(argv):
     p_profiles_add.add_argument('--identify-as', help='Domain used for SMTP identification in EHLO/HELO command.')
     p_profiles_add.add_argument('--source-address', help='Source IP address to use when connecting.')
 
+    # MESSAGES command
     p_messages = sub.add_parser('messages', help='')
     p_messages_sub = p_messages.add_subparsers(dest='subcommand')
 
@@ -205,12 +211,14 @@ def parse_argv(argv):
         elif not args.subcommand:
             p_profiles.print_help()
             sys.exit()
+
     elif args.command == 'messages':
         if args.subcommand == 'add':
             setup_message_args(args)
         elif not args.subcommand:
             p_messages.print_help()
             sys.exit()
+
     else:
         parser.print_help()
         sys.exit()
@@ -253,8 +261,8 @@ def send_message(*,
     address_cc: Optional[List[str]],
     address_bcc: Optional[List[str]],
     message_body: Optional[Union[MIMEBase, str]],
-    profile: Optional[Profile],
-    message: Optional[Message],
+    profile: Optional[PredefinedProfile],
+    message: Optional[PredefinedMessage],
 ):
     if profile:
         logger.debug('using connection details from predefined profile', profile=profile.name)
@@ -371,11 +379,11 @@ def send_message(*,
 
 
 def list_profiles(debug_level):
-    if not PROFILES:
+    if not PREDEFINED_PROFILES:
         print('No known profiles')
     else:
         print('Known profiles:')
-        for name, profile in PROFILES.items():
+        for name, profile in PREDEFINED_PROFILES.items():
             if debug_level > 0:
                 data = profile.to_dict()
                 if debug_level == 1:
@@ -390,17 +398,17 @@ def edit_profiles():
     import subprocess
     cmd = [
         os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim',
-        str(PROFILES_FILE),
+        str(PREDEFINED_PROFILES_FILE),
     ]
     subprocess.run(cmd)
 
 
 def list_messages():
-    if not MESSAGES:
+    if not PREDEFINED_MESSAGES:
         print('No known messages')
     else:
         print('Known messages:')
-        for name, message in MESSAGES.items():
+        for name, message in PREDEFINED_MESSAGES.items():
             print(f"- {name} (from: \"{message.address_from or message.envelope_from}\", subject: \"{message.subject or ''}\")")
 
 
@@ -409,7 +417,7 @@ def edit_messages():
     import subprocess
     cmd = [
         os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim',
-        str(MESSAGES_FILE),
+        str(PREDEFINED_MESSAGES_FILE),
     ]
     subprocess.run(cmd)
 
@@ -422,7 +430,7 @@ def handle_profiles(args):
         edit_profiles()
         sys.exit()
     else:
-        PROFILES.add(Profile(
+        PREDEFINED_PROFILES.add(PredefinedProfile(
             name=args.name[0],
             login=args.login,
             password=args.password,
@@ -445,7 +453,7 @@ def handle_messages(args):
         edit_messages()
         sys.exit()
     else:
-        MESSAGES.add(Message(
+        PREDEFINED_MESSAGES.add(PredefinedMessage(
             name=args.name[0],
             envelope_from=args.envelope_from,
             address_from=args.address_from,
@@ -464,7 +472,7 @@ def handle_messages(args):
 
 
 def handle_send(args):
-    message = None if not args.message else MESSAGES[args.message]
+    message = None if not args.message else PREDEFINED_MESSAGES[args.message]
     if not message and args.raw_body:
         message_body = args.body
     else:
@@ -483,7 +491,7 @@ def handle_send(args):
         )
 
     if args.profile:
-        profile = PROFILES[args.profile]
+        profile = PREDEFINED_PROFILES[args.profile]
     else:
         profile = None
 
@@ -516,17 +524,17 @@ def handle_send(args):
 def main():
     ensure_config_files()
 
-    global PROFILES, MESSAGES
+    global PREDEFINED_PROFILES, PREDEFINED_MESSAGES
     try:
-        PROFILES = Profiles.read()
+        PREDEFINED_PROFILES = PredefinedProfiles.read()
     except toml.decoder.TomlDecodeError as exc:
-        PROFILES = Profiles()
+        PREDEFINED_PROFILES = PredefinedProfiles()
         logger.error(f"profiles configuration error: {exc}")
 
     try:
-        MESSAGES = Messages.read()
+        PREDEFINED_MESSAGES = PredefinedMessages.read()
     except toml.decoder.TomlDecodeError as exc:
-        MESSAGES = Messages()
+        PREDEFINED_MESSAGES = PredefinedMessages()
         logger.error(f"messages configuration error: {exc}")
 
     args = parse_argv(sys.argv[1:])
