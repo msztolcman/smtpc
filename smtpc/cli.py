@@ -423,10 +423,10 @@ def list_profiles(debug_level):
 def edit_profiles():
     import os
     import subprocess
-    cmd = [
-        os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim',
-        str(PREDEFINED_PROFILES_FILE),
-    ]
+
+    editor = os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim'
+    logger.debug(f'editor: {editor}')
+    cmd = [editor, str(PREDEFINED_PROFILES_FILE), ]
     subprocess.run(cmd)
 
 
@@ -442,10 +442,10 @@ def list_messages():
 def edit_messages():
     import os
     import subprocess
-    cmd = [
-        os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim',
-        str(PREDEFINED_MESSAGES_FILE),
-    ]
+
+    editor = os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim'
+    logger.debug(f'editor: {editor}')
+    cmd = [editor, str(PREDEFINED_MESSAGES_FILE), ]
     subprocess.run(cmd)
 
 
