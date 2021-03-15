@@ -29,12 +29,12 @@ def parse_argv(argv):
     parser.add_argument('--debug', '-D', action='count', default=0,
         help='Enable debug messages. Can be used multiple times to increase debug level.')
     parser.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}',
-        help='Display the version and exit')
+        help='Display the version and exit.')
 
     sub = parser.add_subparsers(dest='command')
 
     # SEND command
-    p_send = sub.add_parser('send', help="")
+    p_send = sub.add_parser('send', help="Send message.")
     p_send.add_argument('--profile', '-P', choices=PREDEFINED_PROFILES.keys(),
         help='Get set of connection details (--host, --port, --login, --password etc) from config file.')
     p_send.add_argument('--message', '-M', choices=PREDEFINED_MESSAGES.keys(),
@@ -66,7 +66,7 @@ def parse_argv(argv):
     p_send.add_argument('--body', '-b', default=EMPTY,
         help='Body of email. Has less priority then --body-text and --body-html.')
     p_send.add_argument('--body-type', choices=content_type_choices, default=EMPTY,
-        help='Typehint for email Content-Type. ')
+        help='Typehint for email Content-Type.')
     p_send.add_argument('--body-plain', default=EMPTY,
         help='Text part of the message for text/plain version.')
     p_send.add_argument('--body-html', default=EMPTY,
@@ -79,7 +79,7 @@ def parse_argv(argv):
     p_send.add_argument('--from', '-f', dest='address_from', default=EMPTY,
         help='Sender addres. Will be used for SMTP session if --envelope-from is missing.')
     p_send.add_argument('--envelope-to', '-T', action='append', default=EMPTY,
-        help='Email recpients for SMTP session. Can be used multiple times. '
+        help='Email recpients for SMTP session. Can be used multiple times.'
              'If used, then --to, -cc and --bcc are not used for SMTP session.')
     p_send.add_argument('--to', '-t', dest='address_to', action='append', default=EMPTY,
         help='Email recipients for To header. Used in SMTP session if --envelope-to is missing.')
@@ -91,13 +91,13 @@ def parse_argv(argv):
         help='Additional headers in format: HeaderName=HeaderValue. Can be used multiple times.')
 
     # PROFILES command
-    p_profiles = sub.add_parser('profiles', help="")
+    p_profiles = sub.add_parser('profiles', help="Manage connection profiles.")
     p_profiles_sub = p_profiles.add_subparsers(dest='subcommand')
 
-    p_profiles_edit = p_profiles_sub.add_parser('edit', help='')
-    p_profiles_list = p_profiles_sub.add_parser('list', help='')
-    p_profiles_add = p_profiles_sub.add_parser('add', help='')
-    p_profiles_add.add_argument('name', nargs=1, help='')
+    p_profiles_edit = p_profiles_sub.add_parser('edit', help='Open profiles configuration in default editor.')
+    p_profiles_list = p_profiles_sub.add_parser('list', help='List known connection profiles. Use -D or -DD to see more informations.')
+    p_profiles_add = p_profiles_sub.add_parser('add', help='Add new connection profile.')
+    p_profiles_add.add_argument('name', nargs=1, help='Unique name of connection profile.')
     p_profiles_add.add_argument('--login', '-l', default=DEFAULTS_VALUES_PROFILE['login'],
         help='Login for SMTP authentication. Required if --password was given.')
     p_profiles_add.add_argument('--password', '-p', default=DEFAULTS_VALUES_PROFILE['password'],
@@ -122,17 +122,17 @@ def parse_argv(argv):
         help='Source IP address to use when connecting.')
 
     # MESSAGES command
-    p_messages = sub.add_parser('messages', help='')
+    p_messages = sub.add_parser('messages', help='Manage saved messages.')
     p_messages_sub = p_messages.add_subparsers(dest='subcommand')
 
-    p_messages_edit = p_messages_sub.add_parser('edit', help='')
-    p_messages_list = p_messages_sub.add_parser('list', help='')
-    p_messages_add = p_messages_sub.add_parser('add', help='')
-    p_messages_add.add_argument('name', nargs=1, help='')
+    p_messages_edit = p_messages_sub.add_parser('edit', help='Open messages configuration in default editor.')
+    p_messages_list = p_messages_sub.add_parser('list', help='List known connection profiles.')
+    p_messages_add = p_messages_sub.add_parser('add', help='Add new message.')
+    p_messages_add.add_argument('name', nargs=1, help='Unique name of message.')
     p_messages_add.add_argument('--subject', '-j', help='Subject for email.')
     p_messages_add.add_argument('--body', '-b',
         help='Body of email. Has less priority then --body-text and --body-html.')
-    p_messages_add.add_argument('--body-type', choices=content_type_choices, help='Typehint for email Content-Type. ')
+    p_messages_add.add_argument('--body-type', choices=content_type_choices, help='Typehint for email Content-Type.')
     p_messages_add.add_argument('--body-plain', help='Text part of the message for text/plain version.')
     p_messages_add.add_argument('--body-html', help='Text part of the message for text/html version.')
     p_messages_add.add_argument('--raw-body', action='store_true',
@@ -142,7 +142,7 @@ def parse_argv(argv):
     p_messages_add.add_argument('--from', '-f', dest='address_from',
         help='Sender addres. Will be used for SMTP session if --envelope-from is missing.')
     p_messages_add.add_argument('--envelope-to', '-T', action='append', default=[],
-        help='Email recpients for SMTP session. Can be used multiple times. '
+        help='Email recpients for SMTP session. Can be used multiple times.'
              'If used, then --to, -cc and --bcc are not used for SMTP session.')
     p_messages_add.add_argument('--to', '-t', dest='address_to', action='append', default=[],
         help='Email recipients for To header. Used in SMTP session if --envelope-to is missing.')
