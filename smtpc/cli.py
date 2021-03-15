@@ -98,19 +98,28 @@ def parse_argv(argv):
     p_profiles_list = p_profiles_sub.add_parser('list', help='')
     p_profiles_add = p_profiles_sub.add_parser('add', help='')
     p_profiles_add.add_argument('name', nargs=1, help='')
-    p_profiles_add.add_argument('--login', '-l', help='Login for SMTP authentication. Required if --password was given.')
-    p_profiles_add.add_argument('--password', '-p', help='Password for SMTP authentication. Required if --login was given.')
-    p_profiles_add.add_argument('--host', '-s', default='127.0.0.1',
+    p_profiles_add.add_argument('--login', '-l', default=DEFAULTS_VALUES_PROFILE['login'],
+        help='Login for SMTP authentication. Required if --password was given.')
+    p_profiles_add.add_argument('--password', '-p', default=DEFAULTS_VALUES_PROFILE['password'],
+        help='Password for SMTP authentication. Required if --login was given.')
+    p_profiles_add.add_argument('--host', '-s', default=DEFAULTS_VALUES_PROFILE['host'],
         help='SMTP server. Can be also together with port, ie: 127.0.0.1:465.')
-    p_profiles_add.add_argument('--port', '-o', type=int, help='Port for SMTP connection. Default: 25.')
-    p_profiles_add.add_argument('--tls', action='store_true', help='Force upgrade connection to TLS. Default if --port is 587.')
+    p_profiles_add.add_argument('--port', '-o', type=int, default=DEFAULTS_VALUES_PROFILE['port'],
+        help='Port for SMTP connection. Default: 25.')
+    p_profiles_add.add_argument('--tls', action='store_true', default=DEFAULTS_VALUES_PROFILE['tls'],
+        help='Force upgrade connection to TLS. Default if --port is 587.')
     p_profiles_add.add_argument('--no-tls', action='store_true', help='Force disable TLS upgrade.')
-    p_profiles_add.add_argument('--ssl', action='store_true', help='Force use SSL connection. Default if --port is 465.')
+    p_profiles_add.add_argument('--ssl', action='store_true', default=DEFAULTS_VALUES_PROFILE['ssl'],
+        help='Force use SSL connection. Default if --port is 465.')
     p_profiles_add.add_argument('--no-ssl', action='store_true', help='Force disable SSL connection.')
-    p_profiles_add.add_argument('--connection-timeout', type=int, default=30, help='')
-    p_profiles_add.add_argument('--session-timeout', type=int, help='')
-    p_profiles_add.add_argument('--identify-as', help='Domain used for SMTP identification in EHLO/HELO command.')
-    p_profiles_add.add_argument('--source-address', help='Source IP address to use when connecting.')
+    p_profiles_add.add_argument('--connection-timeout', type=int, default=DEFAULTS_VALUES_PROFILE['connection_timeout'],
+        help='')
+    p_profiles_add.add_argument('--session-timeout', type=int, default=DEFAULTS_VALUES_PROFILE['session_timeout'],
+        help='')
+    p_profiles_add.add_argument('--identify-as', default=DEFAULTS_VALUES_PROFILE['identify_as'],
+        help='Domain used for SMTP identification in EHLO/HELO command.')
+    p_profiles_add.add_argument('--source-address', default=DEFAULTS_VALUES_PROFILE['source_address'],
+        help='Source IP address to use when connecting.')
 
     # MESSAGES command
     p_messages = sub.add_parser('messages', help='')
