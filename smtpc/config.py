@@ -30,6 +30,14 @@ CONFIG_FILE = CONFIG_DIR / 'config.toml'
 PREDEFINED_MESSAGES_FILE = CONFIG_DIR / 'messages.toml'
 
 
+class EMPTY:
+    def __contains__(self, k):
+        return False
+
+
+EMPTY = EMPTY()
+
+
 def ensure_config_files():
     dir_perms = fileperms.Permissions()
     dir_perms.owner_read = True

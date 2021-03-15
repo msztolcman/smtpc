@@ -3,7 +3,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Optional, List
 
-from . import EMPTY, ContentType
+from . import ContentType
+from .config import EMPTY
 from .defaults import DEFAULTS_VALUES_MESSAGE
 from .predefined_messages import PredefinedMessage
 

@@ -8,8 +8,8 @@ from typing import Optional, List, Union
 import structlog
 import toml.decoder
 
-from . import __version__, EMPTY
-from .config import ensure_config_files, PREDEFINED_PROFILES_FILE, PREDEFINED_MESSAGES_FILE, Config
+from . import __version__
+from .config import ensure_config_files, PREDEFINED_PROFILES_FILE, PREDEFINED_MESSAGES_FILE, Config, EMPTY
 from .defaults import DEFAULTS_VALUES_PROFILE, DEFAULTS_VALUES_MESSAGE
 from .message import ContentType, build_message
 from .predefined_messages import PredefinedMessages, PredefinedMessage
