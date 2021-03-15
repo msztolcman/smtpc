@@ -495,6 +495,7 @@ def handle_messages(args):
             body_type=args.body_type,
             headers=args.headers,
         ))
+        # TODO: shouldn't be logger call
         logger.info('Message saved', message=args.name[0])
 
 
@@ -556,12 +557,14 @@ def main():
         PREDEFINED_PROFILES = PredefinedProfiles.read()
     except toml.decoder.TomlDecodeError as exc:
         PREDEFINED_PROFILES = PredefinedProfiles()
+        # TODO: shouldn't be logger call?
         logger.error(f"profiles configuration error: {exc}")
 
     try:
         PREDEFINED_MESSAGES = PredefinedMessages.read()
     except toml.decoder.TomlDecodeError as exc:
         PREDEFINED_MESSAGES = PredefinedMessages()
+        # TODO: shouldn't be logger call?
         logger.error(f"messages configuration error: {exc}")
 
     args = parse_argv(sys.argv[1:])
