@@ -3,8 +3,8 @@ from typing import Optional, List
 
 import toml
 
-from . import ContentType
 from .config import PREDEFINED_MESSAGES_FILE, save_toml_file
+from .enums import ContentType
 
 
 class PredefinedMessage:

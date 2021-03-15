@@ -7,10 +7,11 @@ from typing import Optional
 import structlog
 import toml.decoder
 
-from . import __version__, ExitCodes
+from . import __version__
 from . import message
 from .config import ensure_config_files, PREDEFINED_PROFILES_FILE, PREDEFINED_MESSAGES_FILE, Config, EMPTY
 from .defaults import DEFAULTS_VALUES_PROFILE
+from .enums import ExitCodes
 from .predefined_messages import PredefinedMessages, PredefinedMessage
 from .predefined_profiles import PredefinedProfiles, PredefinedProfile
 

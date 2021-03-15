@@ -7,9 +7,9 @@ from typing import Optional, List, Any, Union
 
 import structlog
 
-from . import ContentType, ExitCodes
 from .config import EMPTY
 from .defaults import DEFAULTS_VALUES_MESSAGE, DEFAULTS_VALUES_PROFILE
+from .enums import ContentType, ExitCodes
 from .predefined_messages import PredefinedMessage
 from .predefined_profiles import PredefinedProfile
 
