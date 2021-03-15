@@ -11,3 +11,7 @@ class ContentType(enum.Enum):
     ALTERNATIVE = 'alternative'
 
 
+class ExitCodes(enum.Enum):
+    OK = 0
+    CONNECTION_ERROR = 1
+    OTHER = 2
