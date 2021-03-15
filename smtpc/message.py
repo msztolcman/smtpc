@@ -1,14 +1,11 @@
-import enum
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Optional, List
 
-
-class ContentType(enum.Enum):
-    PLAIN = 'plain'
-    HTML = 'html'
-    ALTERNATIVE = 'alternative'
+from . import EMPTY, ContentType
+from .config import Message
+from .defaults import DEFAULTS_VALUES_MESSAGE
 
 
 def build_message(*,
@@ -22,9 +19,50 @@ def build_message(*,
     body_html: Optional[str] = None,
     body_plain: Optional[str] = None,
     headers: Optional[List[str]] = None,
+    message: Optional[Message] = None
 ) -> MIMEBase:
-    if not headers:
-        headers = []
+    if message:
+        if subject is EMPTY:
+            subject = message.subject
+        if envelope_from is EMPTY:
+            envelope_from = message.envelope_from
+        if address_from is EMPTY:
+            address_from = message.address_from
+        if envelope_to is EMPTY:
+            envelope_to = message.envelope_to
+        if address_to is EMPTY:
+            address_to = message.address_to
+        if address_cc is EMPTY:
+            address_cc = message.address_cc
+        if body_type is EMPTY:
+            body_type = message.body_type
+        if body_html is EMPTY:
+            body_html = message.body_html
+        if body_plain is EMPTY:
+            body_plain = message.body_plain
+        if headers is EMPTY:
+            headers = message.headers
+
+    if subject is EMPTY:
+        subject = DEFAULTS_VALUES_MESSAGE['subject']
+    if envelope_from is EMPTY:
+        envelope_from = DEFAULTS_VALUES_MESSAGE['envelope_from']
+    if address_from is EMPTY:
+        address_from = DEFAULTS_VALUES_MESSAGE['address_from']
+    if envelope_to is EMPTY:
+        envelope_to = DEFAULTS_VALUES_MESSAGE['envelope_to']
+    if address_to is EMPTY:
+        address_to = DEFAULTS_VALUES_MESSAGE['address_to']
+    if address_cc is EMPTY:
+        address_cc = DEFAULTS_VALUES_MESSAGE['address_cc']
+    if body_type is EMPTY:
+        body_type = DEFAULTS_VALUES_MESSAGE['body_type']
+    if body_html is EMPTY:
+        body_html = DEFAULTS_VALUES_MESSAGE['body_html']
+    if body_plain is EMPTY:
+        body_plain = DEFAULTS_VALUES_MESSAGE['body_plain']
+    if headers is EMPTY:
+        headers = DEFAULTS_VALUES_MESSAGE['headers']
 
     if body_type == ContentType.ALTERNATIVE:
         message = MIMEMultipart('alternative')

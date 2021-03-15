@@ -8,8 +8,9 @@ from typing import Optional, List, Union
 import structlog
 import toml.decoder
 
-from . import __version__
+from . import __version__, EMPTY
 from .config import ensure_config_files, Profiles, Profile, PROFILES_FILE, Config, Messages, MESSAGES_FILE, Message
+from .defaults import DEFAULTS_VALUES_PROFILE, DEFAULTS_VALUES_MESSAGE
 from .message import ContentType, build_message
 
 logger = structlog.get_logger()
@@ -35,44 +36,54 @@ def parse_argv(argv):
     p_send.add_argument('--message', '-M', choices=MESSAGES.keys(),
         help='Get set of message details (--subject, --from, --to, --cc etc) from config file.')
 
-    p_send.add_argument('--login', '-l', help='Login for SMTP authentication. Required if --password was given.')
-    p_send.add_argument('--password', '-p',
+    p_send.add_argument('--login', '-l', default=EMPTY,
+        help='Login for SMTP authentication. Required if --password was given.')
+    p_send.add_argument('--password', '-p', default=EMPTY,
         help='Password for SMTP authentication. Required if --login was given.')
-    p_send.add_argument('--host', '-s', default='127.0.0.1',
+    p_send.add_argument('--host', '-s', default=EMPTY,
         help='SMTP server. Can be also together with port, ie: 127.0.0.1:465.')
-    p_send.add_argument('--port', '-o', type=int, help='Port for SMTP connection. Default: 25.')
-    p_send.add_argument('--tls', action='store_true',
+    p_send.add_argument('--port', '-o', type=int, default=EMPTY,
+        help='Port for SMTP connection. Default: 25.')
+    p_send.add_argument('--tls', action='store_true', default=EMPTY,
         help='Force upgrade connection to TLS. Default if --port is 587.')
     p_send.add_argument('--no-tls', action='store_true', help='Force disable TLS upgrade.')
-    p_send.add_argument('--ssl', action='store_true', help='Force use SSL connection. Default if --port is 465.')
+    p_send.add_argument('--ssl', action='store_true', default=EMPTY,
+        help='Force use SSL connection. Default if --port is 465.')
     p_send.add_argument('--no-ssl', action='store_true', help='Force disable SSL connection.')
     p_send.add_argument('--connection-timeout', type=int, default=30, help='')
     p_send.add_argument('--session-timeout', type=int, help='')
-    p_send.add_argument('--identify-as', help='Domain used for SMTP identification in EHLO/HELO command.')
-    p_send.add_argument('--source-address', help='Source IP address to use when connecting.')
+    p_send.add_argument('--identify-as', default=EMPTY,
+        help='Domain used for SMTP identification in EHLO/HELO command.')
+    p_send.add_argument('--source-address', default=EMPTY,
+        help='Source IP address to use when connecting.')
 
-    p_send.add_argument('--subject', '-j', help='Subject for email.')
-    p_send.add_argument('--body', '-b',
+    p_send.add_argument('--subject', '-j', default=EMPTY,
+        help='Subject for email.')
+    p_send.add_argument('--body', '-b', default=EMPTY,
         help='Body of email. Has less priority then --body-text and --body-html.')
-    p_send.add_argument('--body-type', choices=content_type_choices, help='Typehint for email Content-Type. ')
-    p_send.add_argument('--body-plain', help='Text part of the message for text/plain version.')
-    p_send.add_argument('--body-html', help='Text part of the message for text/html version.')
-    p_send.add_argument('--raw-body', action='store_true',
+    p_send.add_argument('--body-type', choices=content_type_choices, default=EMPTY,
+        help='Typehint for email Content-Type. ')
+    p_send.add_argument('--body-plain', default=EMPTY,
+        help='Text part of the message for text/plain version.')
+    p_send.add_argument('--body-html', default=EMPTY,
+        help='Text part of the message for text/html version.')
+    p_send.add_argument('--raw-body', default=EMPTY,
+        action='store_true',
         help='Do not try to generate email body with headers, use content from --body as whole message body.')
-    p_send.add_argument('--envelope-from', '-F',
+    p_send.add_argument('--envelope-from', '-F', default=EMPTY,
         help='Sender address for SMTP session. If missing, then address from --from is used.')
-    p_send.add_argument('--from', '-f', dest='address_from',
+    p_send.add_argument('--from', '-f', dest='address_from', default=EMPTY,
         help='Sender addres. Will be used for SMTP session if --envelope-from is missing.')
-    p_send.add_argument('--envelope-to', '-T', action='append', default=[],
+    p_send.add_argument('--envelope-to', '-T', action='append', default=EMPTY,
         help='Email recpients for SMTP session. Can be used multiple times. '
              'If used, then --to, -cc and --bcc are not used for SMTP session.')
-    p_send.add_argument('--to', '-t', dest='address_to', action='append', default=[],
+    p_send.add_argument('--to', '-t', dest='address_to', action='append', default=EMPTY,
         help='Email recipients for To header. Used in SMTP session if --envelope-to is missing.')
-    p_send.add_argument('--cc', '-c', dest='address_cc', action='append', default=[],
+    p_send.add_argument('--cc', '-c', dest='address_cc', action='append', default=EMPTY,
         help='Email recipients for Cc header. Used in SMTP session if --envelope-to is missing.')
-    p_send.add_argument('--bcc', '-C', dest='address_bcc', action='append', default=[],
+    p_send.add_argument('--bcc', '-C', dest='address_bcc', action='append', default=EMPTY,
         help='Used in SMTP session if --envelope-to is missing. Will not be included in generated message.')
-    p_send.add_argument('--header', '-H', dest='headers', action='append', default=[],
+    p_send.add_argument('--header', '-H', dest='headers', action='append', default=EMPTY,
         help='Additional headers in format: HeaderName=HeaderValue. Can be used multiple times.')
 
     p_profiles = sub.add_parser('profiles', help="")
@@ -130,10 +141,10 @@ def parse_argv(argv):
     args = parser.parse_args(argv)
 
     def setup_connection_args(args):
-        if args.tls and args.ssl:
+        if args.tls is not EMPTY and args.ssl is not EMPTY:
             parser.error("Cannot use --ssl and --tls together")
 
-        if args.host and args.host.startswith(('smtp://', 'smtps://')):
+        if args.host is not EMPTY and args.host.startswith(('smtp://', 'smtps://')):
             args.host = args.host.replace('smtp://', '').replace('smtps://', '')
 
         if ':' in args.host:
@@ -145,16 +156,16 @@ def parse_argv(argv):
                 except ValueError:
                     parser.error(f"SMTP port: invalid int value: {port}")
 
-        if not args.port:
+        if args.port is not EMPTY:
             args.port = 25
 
-        if not args.ssl and not args.tls:
+        if args.ssl is not EMPTY and args.tls is not EMPTY:
             if args.port == 465 and not args.no_ssl:
                 args.ssl = True
             elif args.port == 587 and not args.no_tls:
                 args.tls = True
 
-        if (args.login and not args.password) or (not args.login and args.password):
+        if (args.login is not EMPTY and args.password is EMPTY) or (args.login is not EMPTY and args.password is EMPTY):
             parser.error("Required both or none: --login, --password")
 
     def setup_message_args(args):
@@ -179,9 +190,10 @@ def parse_argv(argv):
         else:
             args.body_type = ContentType.PLAIN
 
-        for header in args.headers:
-            if '=' not in header:
-                parser.error(f"Invalid header syntax: {header}. Required syntax: HeaderName=HeaderValue")
+        if args.headers is not EMPTY:
+            for header in args.headers:
+                if '=' not in header:
+                    parser.error(f"Invalid header syntax: {header}. Required syntax: HeaderName=HeaderValue")
 
     if args.command == 'send':
         setup_connection_args(args)
@@ -246,24 +258,71 @@ def send_message(*,
 ):
     if profile:
         logger.debug('using connection details from predefined profile', profile=profile.name)
-        login = profile.login
-        password = profile.password
-        host = profile.host
-        port = profile.port
-        ssl = profile.ssl
-        tls = profile.tls
-        connection_timeout = profile.connection_timeout
-        identify_as = profile.identify_as
-        source_address = profile.source_address
+        if login is EMPTY:
+            login = profile.login
+        if password is EMPTY:
+            password = profile.password
+        if host is EMPTY:
+            host = profile.host
+        if port is EMPTY:
+            port = profile.port
+        if ssl is EMPTY:
+            ssl = profile.ssl
+        if tls is EMPTY:
+            tls = profile.tls
+        if connection_timeout is EMPTY:
+            connection_timeout = profile.connection_timeout
+        if identify_as is EMPTY:
+            identify_as = profile.identify_as
+        if source_address is EMPTY:
+            source_address = profile.source_address
+
+    if login is EMPTY:
+        login = DEFAULTS_VALUES_PROFILE['login']
+    if password is EMPTY:
+        password = DEFAULTS_VALUES_PROFILE['password']
+    if host is EMPTY:
+        host = DEFAULTS_VALUES_PROFILE['host']
+    if port is EMPTY:
+        port = DEFAULTS_VALUES_PROFILE['port']
+    if ssl is EMPTY:
+        ssl = DEFAULTS_VALUES_PROFILE['ssl']
+    if tls is EMPTY:
+        tls = DEFAULTS_VALUES_PROFILE['tls']
+    if connection_timeout is EMPTY:
+        connection_timeout = DEFAULTS_VALUES_PROFILE['connection_timeout']
+    if identify_as is EMPTY:
+        identify_as = DEFAULTS_VALUES_PROFILE['identify_as']
+    if source_address is EMPTY:
+        source_address = DEFAULTS_VALUES_PROFILE['source_address']
 
     if message:
         logger.debug('using message details from predefined message', message=message.name)
-        envelope_from = message.envelope_from
-        address_from = message.address_from
-        envelope_to = message.envelope_to
-        address_to = message.address_to
-        address_cc = message.address_cc
-        address_bcc = message.address_bcc
+        if envelope_from is EMPTY:
+            envelope_from = message.envelope_from
+        if address_from is EMPTY:
+            address_from = message.address_from
+        if envelope_to is EMPTY:
+            envelope_to = message.envelope_to
+        if address_to is EMPTY:
+            address_to = message.address_to
+        if address_cc is EMPTY:
+            address_cc = message.address_cc
+        if address_bcc is EMPTY:
+            address_bcc = message.address_bcc
+
+    if envelope_from is EMPTY:
+        envelope_from = DEFAULTS_VALUES_MESSAGE['envelope_from']
+    if address_from is EMPTY:
+        address_from = DEFAULTS_VALUES_MESSAGE['address_from']
+    if envelope_to is EMPTY:
+        envelope_to = DEFAULTS_VALUES_MESSAGE['envelope_to']
+    if address_to is EMPTY:
+        address_to = DEFAULTS_VALUES_MESSAGE['address_to']
+    if address_cc is EMPTY:
+        address_cc = DEFAULTS_VALUES_MESSAGE['address_cc']
+    if address_bcc is EMPTY:
+        address_bcc = DEFAULTS_VALUES_MESSAGE['address_bcc']
 
     if ssl:
         logger.debug('connecting using ssl', connection_timeout=connection_timeout,
@@ -410,16 +469,17 @@ def handle_send(args):
         message_body = args.body
     else:
         message_body = build_message(
-            subject=args.subject if not message else message.subject,
-            envelope_from=args.envelope_from if not message else message.envelope_from,
-            address_from=args.address_from if not message else message.address_from,
-            envelope_to=args.envelope_to if not message else message.envelope_to,
-            address_to=args.address_to if not message else message.address_to,
-            address_cc=args.address_cc if not message else message.address_cc,
-            body_type=args.body_type if not message else message.body_type,
-            body_html=args.body_html or args.body if not message else message.body_html,
-            body_plain=args.body_plain or args.body if not message else message.body_plain,
-            headers=args.headers if not message else message.headers,
+            message=message,
+            subject=args.subject,
+            envelope_from=args.envelope_from,
+            address_from=args.address_from,
+            envelope_to=args.envelope_to,
+            address_to=args.address_to,
+            address_cc=args.address_cc,
+            body_type=args.body_type,
+            body_html=args.body_html,
+            body_plain=args.body_plain,
+            headers=args.headers,
         )
 
     if args.profile:

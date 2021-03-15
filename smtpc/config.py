@@ -6,7 +6,7 @@ from typing import Optional, Dict, List
 import fileperms
 import toml
 
-from .message import ContentType
+from . import ContentType
 
 ENV_SMTPC_CONFIG_DIR = 'SMTPC_CONFIG_DIR'
 ENV_XDG_CONFIG_HOME = 'XDG_CONFIG_HOME'
