@@ -1,19 +1,16 @@
 import argparse
-import enum
 import logging
 import smtplib
-import socket
 import sys
-from email.mime.base import MIMEBase
-from typing import Optional, List, Union, Any
+from typing import Optional
 
 import structlog
 import toml.decoder
 
 from . import __version__, ExitCodes
+from . import message
 from .config import ensure_config_files, PREDEFINED_PROFILES_FILE, PREDEFINED_MESSAGES_FILE, Config, EMPTY
-from .defaults import DEFAULTS_VALUES_PROFILE, DEFAULTS_VALUES_MESSAGE
-from .message import ContentType, BuildMessage
+from .defaults import DEFAULTS_VALUES_PROFILE
 from .predefined_messages import PredefinedMessages, PredefinedMessage
 from .predefined_profiles import PredefinedProfiles, PredefinedProfile
 
@@ -28,7 +25,7 @@ def exit(err_code: ExitCodes):
 
 
 def parse_argv(argv):
-    content_type_choices = [ContentType.PLAIN.value, ContentType.HTML.value]
+    content_type_choices = [message.ContentType.PLAIN.value, message.ContentType.HTML.value]
 
     parser = argparse.ArgumentParser('SMTPc')
     parser.add_argument('--debug', '-D', action='count', default=0,
@@ -202,15 +199,15 @@ def parse_argv(argv):
             ))
 
         if args.body_type in ('plain', 'html'):
-            args.body_type = ContentType(args.body_type)
+            args.body_type = message.ContentType(args.body_type)
         elif args.body_plain and args.body_html:
-            args.body_type = ContentType.ALTERNATIVE
+            args.body_type = message.ContentType.ALTERNATIVE
         elif args.body_plain and not args.body_html:
-            args.body_type = ContentType.PLAIN
+            args.body_type = message.ContentType.PLAIN
         elif not args.body_plain and args.body_html:
-            args.body_type = ContentType.HTML
+            args.body_type = message.ContentType.HTML
         else:
-            args.body_type = ContentType.PLAIN
+            args.body_type = message.ContentType.PLAIN
 
         if args.headers is not EMPTY:
             for header in args.headers:
@@ -259,278 +256,160 @@ def configure_logger(debug_mode: bool = False):
     )
 
 
-class SendMessage:
-    __slots__ = (
-        'connection_timeout', 'source_address',
-        'host', 'port', 'identify_as', 'ssl', 'tls',
-        'login', 'password',
-        'envelope_from', 'address_from',
-        'envelope_to', 'address_to', 'address_cc', 'address_bcc',
-        'message_body', 'predefined_profile', 'predefined_message',
-        'debug_level',
-    )
+class AbstractCommand:
+    def __init__(self, args: argparse.Namespace):
+        self.args = args
 
-    def __init__(self, *,
-        connection_timeout: int,
-        source_address: Optional[str],
-        debug_level: Optional[int],
-        host: str,
-        port: int,
-        identify_as: Optional[str],
-        tls: bool,
-        ssl: bool,
-        login: Optional[str],
-        password: Optional[str],
-        envelope_from: Optional[str],
-        address_from: Optional[str],
-        envelope_to: Optional[List[str]],
-        address_to: Optional[List[str]],
-        address_cc: Optional[List[str]],
-        address_bcc: Optional[List[str]],
-        message_body: Optional[Union[MIMEBase, str]],
-        profile: Optional[PredefinedProfile],
-        message: Optional[PredefinedMessage],
-    ):
-        self.predefined_profile = profile
-        self.predefined_message = message
-        self.debug_level = debug_level
-        self.message_body = message_body
+    def handle(self):
+        pass
 
-        if profile:
-            logger.debug('using connection details from predefined profile', profile=profile.name)
 
-        profile_fields = {
-            'login': login,
-            'password': password,
-            'host': host,
-            'port': port,
-            'ssl': ssl,
-            'tls': tls,
-            'connection_timeout': connection_timeout,
-            'identify_as': identify_as,
-            'source_address': source_address,
-        }
-        for name in profile_fields:
-            self._set_property(name, profile_fields[name], profile, DEFAULTS_VALUES_PROFILE)
-
-        message_fields = {
-            'envelope_from': envelope_from,
-            'address_from': address_from,
-            'envelope_to': envelope_to,
-            'address_to': address_to,
-            'address_cc': address_cc,
-            'address_bcc': address_bcc,
-        }
-        for name in message_fields:
-            self._set_property(name, message_fields[name], message, DEFAULTS_VALUES_MESSAGE)
-
-    def execute(self):
-        if self.ssl:
-            logger.debug('connecting using ssl', host=self.host, port=self.port,
-                connection_timeout=self.connection_timeout, source_address=self.source_address)
-            # don't pass host, don't want to connect yet!
-            smtp = smtplib.SMTP_SSL(timeout=self.connection_timeout, source_address=self.source_address)
+class ProfilesCommand(AbstractCommand):
+    def list(self):
+        if not PREDEFINED_PROFILES:
+            print('No known profiles')
         else:
-            logger.debug('connecting using plain connection', host=self.host, port=self.port,
-                connection_timeout=self.connection_timeout, source_address=self.source_address)
-            # don't pass host, don't want to connect yet!
-            smtp = smtplib.SMTP(timeout=self.connection_timeout, source_address=self.source_address)
+            print('Known profiles:')
+            for name, profile in PREDEFINED_PROFILES.items():
+                if self.args.debug > 0:
+                    data = profile.to_dict()
+                    if self.args.debug == 1:
+                        data['password'] = '***'
+                    print(f"- {name} ({data})")
+                else:
+                    print(f"- {name}")
 
-        if self.debug_level > 1:
-            smtp.set_debuglevel(self.debug_level - 1)
+    def edit(self):
+        import os
+        import subprocess
 
-        try:
-            # HACK: connect doesn't set smtp._host, then ssl/tls will not work :/
-            smtp._host = self.host
-            smtp_code, smtp_message = smtp.connect(self.host, self.port, source_address=self.source_address)
-            logger.debug('connected', host=self.host, port=self.port, source_address=self.source_address,
-                smtp_code=smtp_code, smtp_message=smtp_message)
-        except socket.gaierror as exc:
-            self.log_exception('connection error', host=self.host, port=self.port, errno=exc.errno, message=exc.strerror)
-            exit(ExitCodes.CONNECTION_ERROR)
-        except Exception as exc:
-            self.log_exception('connection error', host=self.host, port=self.port, message=str(exc))
-            exit(ExitCodes.CONNECTION_ERROR)
+        editor = os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim'
+        logger.debug(f'editor: {editor}')
+        cmd = [editor, str(PREDEFINED_PROFILES_FILE), ]
+        subprocess.run(cmd)
 
-        smtp.ehlo(self.identify_as)
-
-        if self.tls:
-            logger.debug('upgrade connection to tls')
-            smtp.starttls()
-
-        if self.login and self.password:
-            logger.debug('call login, will authorize when required', login=self.login)
-            smtp.login(self.login, self.password)
-
-        envelope_from = self.envelope_from or self.address_from
-        envelope_to = self.envelope_to or (self.address_to + self.address_cc + self.address_bcc)
-
-        try:
-            smtp.sendmail(envelope_from, envelope_to, getattr(self.message_body, 'as_string', lambda: self.message_body)())
-        except smtplib.SMTPSenderRefused as exc:
-            log_method = logger.exception if self.debug_level > 0 else logger.error
-            log_method(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
-            exit(ExitCodes.OTHER)
-        finally:
-            smtp.quit()
-
-    def _set_property(self, name: str, initial: Any, low_prio: Union[PredefinedProfile, PredefinedMessage], defaults: dict):
-        value = initial
-        if low_prio and initial is EMPTY:
-            value = getattr(low_prio, name)
-        if value is EMPTY:
-            value = defaults[name]
-        setattr(self, name, value)
-
-    def log_exception(self, msg, **kwargs):
-        log_method = logger.exception if self.debug_level > 0 else logger.error
-        log_method(msg, **kwargs)
-
-
-def list_profiles(debug_level):
-    if not PREDEFINED_PROFILES:
-        print('No known profiles')
-    else:
-        print('Known profiles:')
-        for name, profile in PREDEFINED_PROFILES.items():
-            if debug_level > 0:
-                data = profile.to_dict()
-                if debug_level == 1:
-                    data['password'] = '***'
-                print(f"- {name} ({data})")
-            else:
-                print(f"- {name}")
-
-
-def edit_profiles():
-    import os
-    import subprocess
-
-    editor = os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim'
-    logger.debug(f'editor: {editor}')
-    cmd = [editor, str(PREDEFINED_PROFILES_FILE), ]
-    subprocess.run(cmd)
-
-
-def list_messages():
-    if not PREDEFINED_MESSAGES:
-        print('No known messages')
-    else:
-        print('Known messages:')
-        for name, message in PREDEFINED_MESSAGES.items():
-            print(f"- {name} (from: \"{message.address_from or message.envelope_from}\", subject: \"{message.subject or ''}\")")
-
-
-def edit_messages():
-    import os
-    import subprocess
-
-    editor = os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim'
-    logger.debug(f'editor: {editor}')
-    cmd = [editor, str(PREDEFINED_MESSAGES_FILE), ]
-    subprocess.run(cmd)
-
-
-def handle_profiles(args):
-    if args.subcommand == 'list':
-        list_profiles(args.debug)
-        exit(ExitCodes.OK)
-    elif args.subcommand == 'edit':
-        edit_profiles()
-        exit(ExitCodes.OK)
-    else:
+    def add(self):
         PREDEFINED_PROFILES.add(PredefinedProfile(
-            name=args.name[0],
-            login=args.login,
-            password=args.password,
-            host=args.host,
-            port=args.port,
-            ssl=args.ssl,
-            tls=args.tls,
-            connection_timeout=args.connection_timeout,
-            identify_as=args.identify_as,
-            source_address=args.source_address,
+            name=self.args.name[0],
+            login=self.args.login,
+            password=self.args.password,
+            host=self.args.host,
+            port=self.args.port,
+            ssl=self.args.ssl,
+            tls=self.args.tls,
+            connection_timeout=self.args.connection_timeout,
+            identify_as=self.args.identify_as,
+            source_address=self.args.source_address,
         ))
-        logger.info('Profile saved', profile=args.name[0])
+        logger.info('Profile saved', profile=self.args.name[0])
+
+    def handle(self):
+        if self.args.subcommand == 'list':
+            self.list()
+        elif self.args.subcommand == 'edit':
+            self.edit()
+        else:
+            self.add()
 
 
-def handle_messages(args):
-    if args.subcommand == 'list':
-        list_messages()
-        exit(ExitCodes.OK)
-    elif args.subcommand == 'edit':
-        edit_messages()
-        exit(ExitCodes.OK)
-    else:
+class MessagesCommand(AbstractCommand):
+    def list(self):
+        if not PREDEFINED_MESSAGES:
+            print('No known messages')
+        else:
+            print('Known messages:')
+            for name, message in PREDEFINED_MESSAGES.items():
+                print(
+                    f"- {name} (from: \"{message.address_from or message.envelope_from}\", subject: \"{message.subject or ''}\")")
+
+    def edit(self):
+        import os
+        import subprocess
+
+        editor = os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim'
+        logger.debug(f'editor: {editor}')
+        cmd = [editor, str(PREDEFINED_MESSAGES_FILE), ]
+        subprocess.run(cmd)
+
+    def add(self):
         PREDEFINED_MESSAGES.add(PredefinedMessage(
-            name=args.name[0],
-            envelope_from=args.envelope_from,
-            address_from=args.address_from,
-            envelope_to=args.envelope_to,
-            address_to=args.address_to,
-            address_cc=args.address_cc,
-            address_bcc=args.address_bcc,
-            subject=args.subject,
-            body_plain=args.body_plain,
-            body_html=args.body_html,
-            body_raw=args.body if args.raw_body else None,
-            body_type=args.body_type,
-            headers=args.headers,
+            name=self.args.name[0],
+            envelope_from=self.args.envelope_from,
+            address_from=self.args.address_from,
+            envelope_to=self.args.envelope_to,
+            address_to=self.args.address_to,
+            address_cc=self.args.address_cc,
+            address_bcc=self.args.address_bcc,
+            subject=self.args.subject,
+            body_plain=self.args.body_plain,
+            body_html=self.args.body_html,
+            body_raw=self.args.body if self.args.raw_body else None,
+            body_type=self.args.body_type,
+            headers=self.args.headers,
         ))
         # TODO: shouldn't be logger call
-        logger.info('Message saved', message=args.name[0])
+        logger.info('Message saved', message=self.args.name[0])
+
+    def handle(self):
+        if self.args.subcommand == 'list':
+            self.list()
+        elif self.args.subcommand == 'edit':
+            self.edit()
+        else:
+            self.add()
 
 
-def handle_send(args):
-    message = None if not args.message else PREDEFINED_MESSAGES[args.message]
-    if not message and args.raw_body:
-        message_body = args.body
-    else:
-        message_builder = BuildMessage(
-            message=message,
-            subject=args.subject,
-            envelope_from=args.envelope_from,
-            address_from=args.address_from,
-            envelope_to=args.envelope_to,
-            address_to=args.address_to,
-            address_cc=args.address_cc,
-            body_type=args.body_type,
-            body_html=args.body_html,
-            body_plain=args.body_plain,
-            headers=args.headers,
-        )
-        message_body = message_builder.execute()
+class SendCommand(AbstractCommand):
+    def handle(self):
+        predefined_message = None if not self.args.message else PREDEFINED_MESSAGES[self.args.message]
+        if not predefined_message and self.args.raw_body:
+            message_body = self.args.body
+        else:
+            message_builder = message.Builder(
+                message=predefined_message,
+                subject=self.args.subject,
+                envelope_from=self.args.envelope_from,
+                address_from=self.args.address_from,
+                envelope_to=self.args.envelope_to,
+                address_to=self.args.address_to,
+                address_cc=self.args.address_cc,
+                body_type=self.args.body_type,
+                body_html=self.args.body_html,
+                body_plain=self.args.body_plain,
+                headers=self.args.headers,
+            )
+            message_body = message_builder.execute()
 
-    if args.profile:
-        profile = PREDEFINED_PROFILES[args.profile]
-    else:
-        profile = None
+        if self.args.profile:
+            profile = PREDEFINED_PROFILES[self.args.profile]
+        else:
+            profile = None
 
-    try:
-        send_message = SendMessage(
-            profile=profile,
-            message=message,
-            connection_timeout=args.connection_timeout,
-            source_address=args.source_address,
-            debug_level=args.debug,
-            host=args.host,
-            port=args.port,
-            identify_as=args.identify_as,
-            tls=args.tls,
-            ssl=args.ssl,
-            login=args.login,
-            password=args.password,
-            envelope_from=args.envelope_from,
-            address_from=args.address_from,
-            envelope_to=args.envelope_to,
-            address_to=args.address_to,
-            address_cc=args.address_cc,
-            address_bcc=args.address_bcc,
-            message_body=message_body,
-        )
-        send_message.execute()
-    except (smtplib.SMTPSenderRefused, smtplib.SMTPAuthenticationError) as exc:
-        logger.error(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
+        try:
+            send_message = message.Sender(
+                profile=profile,
+                message=predefined_message,
+                connection_timeout=self.args.connection_timeout,
+                source_address=self.args.source_address,
+                debug_level=self.args.debug,
+                host=self.args.host,
+                port=self.args.port,
+                identify_as=self.args.identify_as,
+                tls=self.args.tls,
+                ssl=self.args.ssl,
+                login=self.args.login,
+                password=self.args.password,
+                envelope_from=self.args.envelope_from,
+                address_from=self.args.address_from,
+                envelope_to=self.args.envelope_to,
+                address_to=self.args.address_to,
+                address_cc=self.args.address_cc,
+                address_bcc=self.args.address_bcc,
+                message_body=message_body,
+            )
+            send_message.execute()
+        except (smtplib.SMTPSenderRefused, smtplib.SMTPAuthenticationError) as exc:
+            logger.error(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
 
 
 def main():
@@ -555,10 +434,12 @@ def main():
     configure_logger(args.debug > 0)
 
     if args.command == 'profiles':
-        handle_profiles(args)
+        handler = ProfilesCommand(args)
     elif args.command == 'send':
-        handle_send(args)
+        handler = SendCommand(args)
     elif args.command == 'messages':
-        handle_messages(args)
+        handler = MessagesCommand(args)
+
+    handler.handle()
 
     exit(ExitCodes.OK)
