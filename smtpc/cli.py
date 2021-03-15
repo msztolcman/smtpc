@@ -168,20 +168,16 @@ def parse_argv(argv):
                 ' if --message not specified' if not hasattr(args, 'message') else ''
             ))
 
-        if args.body_type == 'plain':
+        if args.body_type in ('plain', 'html'):
+            args.body_type = ContentType(args.body_type)
+        elif args.body_plain and args.body_html:
+            args.body_type = ContentType.ALTERNATIVE
+        elif args.body_plain and not args.body_html:
             args.body_type = ContentType.PLAIN
-        elif args.body_type == 'html':
+        elif not args.body_plain and args.body_html:
             args.body_type = ContentType.HTML
         else:
-            # no body_type specified
-            if args.body_plain and args.body_html:
-                args.body_type = ContentType.ALTERNATIVE
-            elif args.body_plain and not args.body_html:
-                args.body_type = ContentType.PLAIN
-            elif not args.body_plain and args.body_html:
-                args.body_type = ContentType.HTML
-            else:
-                args.body_type = ContentType.PLAIN
+            args.body_type = ContentType.PLAIN
 
         for header in args.headers:
             if '=' not in header:
