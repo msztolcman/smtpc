@@ -14,7 +14,7 @@ If you like this tool, just [say thanks](https://saythanks.io/to/marcin%40urzeni
 Current stable version
 ----------------------
 
-0.2.0
+0.3.0
 
 Features
 --------
