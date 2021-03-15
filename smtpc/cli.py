@@ -140,7 +140,10 @@ def parse_argv(argv):
             host, port = args.host.split(':', 1)
             args.host = host
             if not args.port:
-                args.port = int(port)
+                try:
+                    args.port = int(port)
+                except ValueError:
+                    parser.error(f"SMTP port: invalid int value: {port}")
 
         if not args.port:
             args.port = 25
