@@ -114,6 +114,14 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 ChangeLog
 ---------
 
+### v0.4.1
+
+* fixed handling --ssl and --tls when sending message using profile
+* added simple --dry-run option
+* added --reply-to option
+* minor fixes to error handling
+* added User-Agent header to generated messages
+
 ### v0.4.0
 
 * BC: renamed command: `profile` -> `profiles`
