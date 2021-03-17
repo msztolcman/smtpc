@@ -9,6 +9,7 @@ import structlog
 
 from .defaults import DEFAULTS_VALUES_MESSAGE, DEFAULTS_VALUES_PROFILE
 from .enums import ContentType, ExitCodes
+from .errors import MissingBodyError
 from .predefined_messages import PredefinedMessage
 from .predefined_profiles import PredefinedProfile
 from .utils import exit, guess_content_type, determine_ssl_tls_by_port
@@ -67,8 +68,12 @@ class Builder:
             if self.body_html:
                 message.attach(MIMEText(self.body_html, 'html'))
         elif self.body_type == ContentType.PLAIN:
+            if not self.body_plain:
+                raise MissingBodyError("Body type specified as PLAIN, but plain body is missing")
             message = MIMEText(self.body_plain, 'plain')
         elif self.body_type == ContentType.HTML:
+            if not self.body_html:
+                raise MissingBodyError("Body type specified as HTML, but html body is missing")
             message = MIMEText(self.body_html, 'html')
 
         for header in self.headers:
@@ -226,8 +231,7 @@ class Sender:
         try:
             smtp.sendmail(envelope_from, envelope_to, getattr(self.message_body, 'as_string', lambda: self.message_body)())
         except smtplib.SMTPSenderRefused as exc:
-            log_method = logger.exception if self.debug_level > 0 else logger.error
-            log_method(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
+            self.log_exception(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
             exit(ExitCodes.OTHER)
         finally:
             smtp.quit()

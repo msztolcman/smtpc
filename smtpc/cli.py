@@ -11,6 +11,7 @@ from . import __version__
 from . import message
 from .config import ensure_config_files, PREDEFINED_PROFILES_FILE, PREDEFINED_MESSAGES_FILE, Config
 from .enums import ExitCodes
+from .errors import SMTPcError
 from .predefined_messages import PredefinedMessages, PredefinedMessage
 from .predefined_profiles import PredefinedProfiles, PredefinedProfile
 from .utils import exit, determine_ssl_tls_by_port
@@ -257,6 +258,10 @@ class AbstractCommand:
     def handle(self):
         pass
 
+    def log_exception(self, msg, **kwargs):
+        log_method = logger.exception if self.args.debug > 0 else logger.error
+        log_method(msg, **kwargs)
+
 
 class ProfilesCommand(AbstractCommand):
     def list(self):
@@ -358,6 +363,13 @@ class MessagesCommand(AbstractCommand):
 
 class SendCommand(AbstractCommand):
     def handle(self):
+        try:
+            self._handle()
+        except SMTPcError as exc:
+            self.log_exception('exception found', message=str(exc))
+            exit(ExitCodes.OTHER)
+
+    def _handle(self):
         predefined_message = None if not self.args.message else PREDEFINED_MESSAGES[self.args.message]
         if not predefined_message and self.args.raw_body:
             message_body = self.args.body
