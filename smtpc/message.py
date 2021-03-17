@@ -7,6 +7,7 @@ from typing import Optional, List, Any, Union
 
 import structlog
 
+from . import __version__
 from .defaults import DEFAULTS_VALUES_MESSAGE, DEFAULTS_VALUES_PROFILE
 from .enums import ContentType, ExitCodes
 from .errors import MissingBodyError
@@ -92,6 +93,8 @@ class Builder:
                 message['Cc'] = ', '.join(self.address_cc)
         else:
             message['To'] = ', '.join(self.envelope_to)
+
+        message['User-Agent'] = f'SMTPc/{__version__} (https://github.com/msztolcman/smtpc (c) 2021 Marcin Sztolcman)'
 
         return message
 
