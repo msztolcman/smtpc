@@ -20,7 +20,7 @@ class Builder:
     __slots__ = (
         'subject',
         'envelope_from', 'address_from',
-        'envelope_to', 'address_to', 'address_cc',
+        'envelope_to', 'address_to', 'address_cc', 'reply_to',
         'body_type', 'body_html', 'body_plain',
         'headers',
         'predefined_message',
@@ -33,6 +33,7 @@ class Builder:
         envelope_to: Optional[List[str]],
         address_to: Optional[List[str]],
         address_cc: Optional[List[str]],
+        reply_to: Optional[List[str]],
         body_type: ContentType,
         body_html: Optional[str] = None,
         body_plain: Optional[str] = None,
@@ -48,6 +49,7 @@ class Builder:
             'envelope_to': envelope_to,
             'address_to': address_to,
             'address_cc': address_cc,
+            'reply_to': reply_to,
             'body_type': body_type,
             'body_html': body_html,
             'body_plain': body_plain,
@@ -75,6 +77,8 @@ class Builder:
 
         if self.subject:
             message['Subject'] = self.subject
+        if self.reply_to:
+            message['Reply-To'] = self.reply_to[0]
         message['From'] = self.address_from or self.envelope_from
         if self.address_to or self.address_cc:
             if self.address_to:
@@ -101,7 +105,7 @@ class Sender:
         'host', 'port', 'identify_as', 'ssl', 'tls',
         'login', 'password',
         'envelope_from', 'address_from',
-        'envelope_to', 'address_to', 'address_cc', 'address_bcc',
+        'envelope_to', 'address_to', 'address_cc', 'address_bcc', 'reply_to',
         'message_body', 'predefined_profile', 'predefined_message',
         'debug_level', 'dry_run',
     )
@@ -125,6 +129,7 @@ class Sender:
         address_to: Optional[List[str]],
         address_cc: Optional[List[str]],
         address_bcc: Optional[List[str]],
+        reply_to: Optional[List[str]],
         message_body: Optional[Union[MIMEBase, str]],
         predefined_profile: Optional[PredefinedProfile],
         predefined_message: Optional[PredefinedMessage],
@@ -163,6 +168,7 @@ class Sender:
             'address_to': address_to,
             'address_cc': address_cc,
             'address_bcc': address_bcc,
+            'reply_to': reply_to,
         }
         for name in message_fields:
             self._set_property(name, message_fields[name], predefined_message, DEFAULTS_VALUES_MESSAGE)

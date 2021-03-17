@@ -10,7 +10,7 @@ from .utils import guess_content_type
 
 class PredefinedMessage:
     __slots__ = (
-        'name', 'envelope_from', 'address_from', 'envelope_to', 'address_to', 'address_cc', 'address_bcc',
+        'name', 'envelope_from', 'address_from', 'envelope_to', 'address_to', 'address_cc', 'address_bcc', 'reply_to',
         'subject', 'body_plain', 'body_html', 'body_raw', 'body_type', 'headers',
     )
 
@@ -22,6 +22,7 @@ class PredefinedMessage:
         address_to: Optional[List[str]] = None,
         address_cc: Optional[List[str]] = None,
         address_bcc: Optional[List[str]] = None,
+        reply_to: Optional[List[str]] = None,
         subject: Optional[str] = None,
         body_plain: Optional[str] = None,
         body_html: Optional[str] = None,
@@ -36,6 +37,7 @@ class PredefinedMessage:
         self.address_to = address_to
         self.address_cc = address_cc
         self.address_bcc = address_bcc
+        self.reply_to = reply_to
         self.subject = subject
         self.body_plain = body_plain
         self.body_html = body_html
@@ -80,6 +82,7 @@ class PredefinedMessages(dict):
                 address_to=message.get('address_to'),
                 address_cc=message.get('address_cc'),
                 address_bcc=message.get('address_bcc'),
+                reply_to=message.get('reply_to'),
                 subject=message.get('subject'),
                 body_plain=message.get('body_plain'),
                 body_html=message.get('body_html'),

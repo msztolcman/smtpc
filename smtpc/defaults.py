@@ -5,6 +5,7 @@ DEFAULTS_VALUES_MESSAGE = {
     'address_to': [],
     'address_cc': [],
     'address_bcc': [],
+    'reply_to': [],
     'subject': None,
     'body_plain': None,
     'body_html': None,

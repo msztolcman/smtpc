@@ -92,6 +92,8 @@ def parse_argv(argv):
         help='Email recipients for Cc header. Used in SMTP session if --envelope-to is missing.')
     p_send.add_argument('--bcc', '-C', dest='address_bcc', action='append',
         help='Used in SMTP session if --envelope-to is missing. Will not be included in generated message.')
+    p_send.add_argument('--reply-to', dest='reply_to', action='append',
+        help='How to fill Reply-To header.')
     p_send.add_argument('--header', '-H', dest='headers', action='append',
         help='Additional headers in format: HeaderName=HeaderValue. Can be used multiple times.')
 
@@ -161,6 +163,8 @@ def parse_argv(argv):
         help='Email recipients for Cc header. Used in SMTP session if --envelope-to is missing.')
     p_messages_add.add_argument('--bcc', '-C', dest='address_bcc', action='append',
         help='Used in SMTP session if --envelope-to is missing. Will not be included in generated message.')
+    p_messages_add.add_argument('--reply-to', dest='reply_to', action='append',
+        help='How to fill Reply-To header.')
     p_messages_add.add_argument('--header', '-H', dest='headers', action='append',
         help='Additional headers in format: HeaderName=HeaderValue. Can be used multiple times.')
 
@@ -222,6 +226,9 @@ def parse_argv(argv):
     else:
         parser.print_help()
         exit(ExitCodes.OK)
+
+    if hasattr(args, 'reply_to') and len(args.reply_to) > 1:
+        parser.error("Currently only one --reply-to can be used")
 
     return args
 
@@ -329,6 +336,7 @@ class MessagesCommand(AbstractCommand):
             address_to=self.args.address_to,
             address_cc=self.args.address_cc,
             address_bcc=self.args.address_bcc,
+            reply_to=self.args.reply_to,
             subject=self.args.subject,
             body_plain=self.args.body_plain,
             body_html=self.args.body_html,
@@ -362,6 +370,7 @@ class SendCommand(AbstractCommand):
                 envelope_to=self.args.envelope_to,
                 address_to=self.args.address_to,
                 address_cc=self.args.address_cc,
+                reply_to=self.args.reply_to,
                 body_type=self.args.body_type,
                 body_html=self.args.body_html,
                 body_plain=self.args.body_plain,
@@ -394,6 +403,7 @@ class SendCommand(AbstractCommand):
                 address_to=self.args.address_to,
                 address_cc=self.args.address_cc,
                 address_bcc=self.args.address_bcc,
+                reply_to=self.args.reply_to,
                 message_body=message_body,
                 no_ssl=self.args.no_ssl,
                 no_tls=self.args.no_tls,
