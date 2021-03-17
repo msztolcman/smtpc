@@ -1,4 +1,4 @@
-__all__ = ['guess_content_type', 'exit']
+__all__ = ['guess_content_type', 'determine_ssl_tls_by_port', 'exit']
 
 import sys
 from typing import Optional
@@ -22,3 +22,17 @@ def guess_content_type(body_type: Optional[str], body_plain: Optional[str], body
     else:
         body_type = ContentType.PLAIN
     return body_type
+
+
+def determine_ssl_tls_by_port(
+    port: Optional[int],
+    ssl: Optional[bool], tls: Optional[bool],
+    no_ssl: Optional[bool] = None, no_tls: Optional[bool] = None
+):
+    if not ssl and not tls:
+        if port == 465 and not no_ssl:
+            ssl = True
+        elif port == 587 and not no_tls:
+            tls = True
+
+    return ssl, tls

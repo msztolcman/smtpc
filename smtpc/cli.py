@@ -13,7 +13,7 @@ from .config import ensure_config_files, PREDEFINED_PROFILES_FILE, PREDEFINED_ME
 from .enums import ExitCodes
 from .predefined_messages import PredefinedMessages, PredefinedMessage
 from .predefined_profiles import PredefinedProfiles, PredefinedProfile
-from .utils import exit
+from .utils import exit, determine_ssl_tls_by_port
 
 logger = structlog.get_logger()
 CONFIG: Optional[Config] = None
@@ -49,13 +49,13 @@ def parse_argv(argv):
         help='SMTP server. Can be also together with port, ie: 127.0.0.1:465.')
     p_send.add_argument('--port', '-o', type=int,
         help='Port for SMTP connection. Default: 25.')
-    p_send.add_argument('--tls', action='store_true',
+    p_send.add_argument('--tls', action='store_true', default=None,
         help='Force upgrade connection to TLS. Default if --port is 587.')
-    p_send.add_argument('--no-tls', action='store_true',
+    p_send.add_argument('--no-tls', action='store_true', default=None,
         help='Force disable TLS upgrade.')
-    p_send.add_argument('--ssl', action='store_true',
+    p_send.add_argument('--ssl', action='store_true', default=None,
         help='Force use SSL connection. Default if --port is 465.')
-    p_send.add_argument('--no-ssl', action='store_true',
+    p_send.add_argument('--no-ssl', action='store_true', default=None,
         help='Force disable SSL connection.')
     p_send.add_argument('--connection-timeout', type=int, help='')
     p_send.add_argument('--session-timeout', type=int, help='')
@@ -109,13 +109,13 @@ def parse_argv(argv):
         help='SMTP server. Can be also together with port, ie: 127.0.0.1:465.')
     p_profiles_add.add_argument('--port', '-o', type=int,
         help='Port for SMTP connection. Default: 25.')
-    p_profiles_add.add_argument('--tls', action='store_true',
+    p_profiles_add.add_argument('--tls', action='store_true', default=None,
         help='Force upgrade connection to TLS. Default if --port is 587.')
-    p_profiles_add.add_argument('--no-tls', action='store_true',
+    p_profiles_add.add_argument('--no-tls', action='store_true', default=None,
         help='Force disable TLS upgrade.')
-    p_profiles_add.add_argument('--ssl', action='store_true',
+    p_profiles_add.add_argument('--ssl', action='store_true', default=None,
         help='Force use SSL connection. Default if --port is 465.')
-    p_profiles_add.add_argument('--no-ssl', action='store_true',
+    p_profiles_add.add_argument('--no-ssl', action='store_true', default=None,
         help='Force disable SSL connection.')
     p_profiles_add.add_argument('--connection-timeout', type=int,
         help='')
@@ -274,6 +274,8 @@ class ProfilesCommand(AbstractCommand):
         subprocess.run(cmd)
 
     def add(self):
+        self.args.ssl, self.args.tls = determine_ssl_tls_by_port(self.args.port,
+            self.args.ssl, self.args.tls, self.args.no_ssl, self.args.no_tls)
         PREDEFINED_PROFILES.add(PredefinedProfile(
             name=self.args.name[0],
             login=self.args.login,

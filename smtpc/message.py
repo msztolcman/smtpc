@@ -11,7 +11,7 @@ from .defaults import DEFAULTS_VALUES_MESSAGE, DEFAULTS_VALUES_PROFILE
 from .enums import ContentType, ExitCodes
 from .predefined_messages import PredefinedMessage
 from .predefined_profiles import PredefinedProfile
-from .utils import exit, guess_content_type
+from .utils import exit, guess_content_type, determine_ssl_tls_by_port
 
 logger = structlog.get_logger()
 
@@ -98,7 +98,7 @@ class Builder:
 class Sender:
     __slots__ = (
         'connection_timeout', 'source_address',
-        'host', 'port', 'identify_as', 'ssl', 'tls', 'no_ssl', 'no_tls',
+        'host', 'port', 'identify_as', 'ssl', 'tls',
         'login', 'password',
         'envelope_from', 'address_from',
         'envelope_to', 'address_to', 'address_cc', 'address_bcc',
@@ -133,14 +133,6 @@ class Sender:
         self.predefined_message = predefined_message
         self.debug_level = debug_level
         self.message_body = message_body
-        self.no_ssl = no_ssl
-        self.no_tls = no_tls
-
-        if not ssl and not tls:
-            if port == 465 and not no_ssl:
-                ssl = True
-            elif port == 587 and not no_tls:
-                tls = True
 
         if predefined_profile:
             logger.debug('using connection details from predefined profile', profile=predefined_profile.name)
@@ -150,14 +142,17 @@ class Sender:
             'password': password,
             'host': host,
             'port': port,
-            'ssl': ssl,
-            'tls': tls,
             'connection_timeout': connection_timeout,
             'identify_as': identify_as,
             'source_address': source_address,
         }
         for name in profile_fields:
             self._set_property(name, profile_fields[name], predefined_profile, DEFAULTS_VALUES_PROFILE)
+
+        if any(item is not None for item in [port, ssl, tls, no_ssl, no_tls]):
+            self.ssl, self.tls = determine_ssl_tls_by_port(port, ssl, tls, no_ssl, no_tls)
+        else:
+            self.ssl, self.tls = determine_ssl_tls_by_port(predefined_profile.port, predefined_profile.ssl, predefined_profile.tls)
 
         message_fields = {
             'envelope_from': envelope_from,
