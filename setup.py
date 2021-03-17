@@ -11,7 +11,7 @@ with open('README.md') as f:
 
 setup(
     name='smtpc',
-    version='0.4.0',
+    version='0.4.1',
     description='',
     long_description=readme,
     long_description_content_type='text/markdown',
