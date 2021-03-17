@@ -35,6 +35,8 @@ def parse_argv(argv):
 
     # SEND command
     p_send = sub.add_parser('send', help="Send message.")
+    p_send.add_argument('--dry-run', action='store_true',
+        help='Stop processing just before creating SMTP connection with remote server')
     p_send.add_argument('--profile', '-P', choices=PREDEFINED_PROFILES.keys(),
         help='Get set of connection details (--host, --port, --login, --password etc) from config file.')
     p_send.add_argument('--message', '-M', choices=PREDEFINED_MESSAGES.keys(),
@@ -395,6 +397,7 @@ class SendCommand(AbstractCommand):
                 message_body=message_body,
                 no_ssl=self.args.no_ssl,
                 no_tls=self.args.no_tls,
+                dry_run=self.args.dry_run,
             )
             send_message.execute()
         except (smtplib.SMTPSenderRefused, smtplib.SMTPAuthenticationError) as exc:

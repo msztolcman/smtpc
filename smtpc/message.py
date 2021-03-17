@@ -103,7 +103,7 @@ class Sender:
         'envelope_from', 'address_from',
         'envelope_to', 'address_to', 'address_cc', 'address_bcc',
         'message_body', 'predefined_profile', 'predefined_message',
-        'debug_level',
+        'debug_level', 'dry_run',
     )
 
     def __init__(self, *,
@@ -128,11 +128,13 @@ class Sender:
         message_body: Optional[Union[MIMEBase, str]],
         predefined_profile: Optional[PredefinedProfile],
         predefined_message: Optional[PredefinedMessage],
+        dry_run: Optional[bool],
     ):
         self.predefined_profile = predefined_profile
         self.predefined_message = predefined_message
         self.debug_level = debug_level
         self.message_body = message_body
+        self.dry_run = dry_run
 
         if predefined_profile:
             logger.debug('using connection details from predefined profile', profile=predefined_profile.name)
@@ -174,12 +176,17 @@ class Sender:
             logger.debug('connecting using ssl', host=self.host, port=self.port,
                 connection_timeout=self.connection_timeout, source_address=self.source_address)
             # don't pass host, don't want to connect yet!
-            smtp = smtplib.SMTP_SSL(timeout=self.connection_timeout, source_address=self.source_address)
+            if not self.dry_run:
+                smtp = smtplib.SMTP_SSL(timeout=self.connection_timeout, source_address=self.source_address)
         else:
             logger.debug('connecting using plain connection', host=self.host, port=self.port,
                 connection_timeout=self.connection_timeout, source_address=self.source_address)
             # don't pass host, don't want to connect yet!
-            smtp = smtplib.SMTP(timeout=self.connection_timeout, source_address=self.source_address)
+            if not self.dry_run:
+                smtp = smtplib.SMTP(timeout=self.connection_timeout, source_address=self.source_address)
+
+        if self.dry_run:
+            return
 
         if self.debug_level > 1:
             smtp.set_debuglevel(self.debug_level - 1)
