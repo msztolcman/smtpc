@@ -38,8 +38,9 @@ setup(
     },
     install_requires=requirements,
     extras_require=extras_requirements,
+    # see: https://pypi.python.org/pypi?:action=list_classifiers
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
@@ -47,9 +48,11 @@ setup(
         'Operating System :: MacOS :: MacOS X',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Topic :: Communications :: Email',
         'Topic :: Utilities',
         'Topic :: Software Development',
