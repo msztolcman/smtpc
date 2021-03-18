@@ -95,6 +95,9 @@ class PredefinedMessages(dict):
 
     def add(self, message: PredefinedMessage):
         self[message.name] = message
+
+    def delete(self, message_name: str):
+        del self[message_name]
         save_toml_file(PREDEFINED_MESSAGES_FILE, {
             'messages': {
                 name: message.to_dict()

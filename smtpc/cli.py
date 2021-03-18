@@ -104,6 +104,9 @@ def parse_argv(argv):
 
     p_profiles_edit = p_profiles_sub.add_parser('edit', help='Open profiles configuration in default editor.')
     p_profiles_list = p_profiles_sub.add_parser('list', help='List known connection profiles. Use -D or -DD to see more informations.')
+    p_profiles_delete = p_profiles_sub.add_parser('delete', help='Remove connection profile.')
+    p_profiles_delete.add_argument('name', nargs=1, choices=PREDEFINED_PROFILES.keys(),
+        help='Name of connection profile to remove.')
     p_profiles_add = p_profiles_sub.add_parser('add', help='Add new connection profile.')
     p_profiles_add.add_argument('name', nargs=1, help='Unique name of connection profile.')
     p_profiles_add.add_argument('--login', '-l',
@@ -137,6 +140,9 @@ def parse_argv(argv):
 
     p_messages_edit = p_messages_sub.add_parser('edit', help='Open messages configuration in default editor.')
     p_messages_list = p_messages_sub.add_parser('list', help='List known connection profiles.')
+    p_messages_delete = p_messages_sub.add_parser('delete', help='Remove message.')
+    p_messages_delete.add_argument('name', nargs=1, choices=PREDEFINED_MESSAGES.keys(),
+        help='Name of message to remove.')
     p_messages_add = p_messages_sub.add_parser('add', help='Add new message.')
     p_messages_add.add_argument('name', nargs=1, help='Unique name of message.')
     p_messages_add.add_argument('--subject', '-j',
@@ -287,6 +293,9 @@ class ProfilesCommand(AbstractCommand):
         cmd = [editor, str(PREDEFINED_PROFILES_FILE), ]
         subprocess.run(cmd)
 
+    def delete(self):
+        PREDEFINED_PROFILES.delete(self.args.name[0])
+
     def add(self):
         self.args.ssl, self.args.tls = determine_ssl_tls_by_port(self.args.port,
             self.args.ssl, self.args.tls, self.args.no_ssl, self.args.no_tls)
@@ -309,6 +318,8 @@ class ProfilesCommand(AbstractCommand):
             self.list()
         elif self.args.subcommand == 'edit':
             self.edit()
+        elif self.args.subcommand == 'delete':
+            self.delete()
         else:
             self.add()
 
@@ -356,11 +367,16 @@ class MessagesCommand(AbstractCommand):
         # TODO: shouldn't be logger call
         logger.info('Message saved', message=self.args.name[0])
 
+    def delete(self):
+        PREDEFINED_MESSAGES.delete(self.args.name[0])
+
     def handle(self):
         if self.args.subcommand == 'list':
             self.list()
         elif self.args.subcommand == 'edit':
             self.edit()
+        elif self.args.subcommand == 'delete':
+            self.delete()
         else:
             self.add()
 

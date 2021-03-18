@@ -89,4 +89,12 @@ class PredefinedProfiles(dict):
             }
         })
 
+    def delete(self, profile_name: str):
+        del self[profile_name]
 
+        save_toml_file(PREDEFINED_PROFILES_FILE, {
+            'profiles': {
+                name: profile.to_dict()
+                for name, profile in self.items()
+            }
+        })
