@@ -80,8 +80,8 @@ class PredefinedProfiles(dict):
 
         return p
 
-    def add(self, profile: PredefinedProfile):
-        self[profile.name] = profile
+    def add(self, new_profile: PredefinedProfile):
+        self[new_profile.name] = new_profile
         save_toml_file(PREDEFINED_PROFILES_FILE, {
             'profiles': {
                 name: profile.to_dict()
