@@ -129,7 +129,8 @@ Templating
 ----------
 
 Both, Subject and email body can also be used as a templates. By default, if
-no `--template-field` is specified, then no templating engine is used.
+no `--template-field` or `--template-field-json` is specified, then no
+templating engine is used.
 
 If you will specify any template field, then SMTPc is looking for template engine.
 By default, SMTPc try to use [Jinja2](https://jinja.palletsprojects.com)
@@ -167,9 +168,10 @@ ChangeLog
 
 ### v0.6.0
 
-* added `--template-field` param for `send` command, allows to replace
-  some `{{ fields }}` in email body or subject with specified values. Or you
-  can also use [Jinja2](https://jinja.palletsprojects.com) if module is installed
+* added `--template-field` and `--template-field-json` params for `send` command,
+  allows to replace some `{{ fields }}` in email body or subject with specified
+  values. Or you can also use [Jinja2](https://jinja.palletsprojects.com) if
+  module is installed
 
 ### v0.5.0
 

@@ -83,6 +83,9 @@ def parse_argv(argv):
     p_send.add_argument('--template-field', '-I', dest='template_fields', action='append',
         help='If given, should be in format: "FieldName=FieldValue". Then all occurrences of "{FieldName}" '
              'in subject or body will be replaced with "value"')
+    p_send.add_argument('--template-field-json', '-J', dest='template_fields_json', action='append',
+        help='If given, should be in format: "FieldName=JSON". Then all occurrences of "{FieldName}" '
+             'in subject or body will be replaced with "json value"')
     p_send.add_argument('--envelope-from', '-F',
         help='Sender address for SMTP session. If missing, then address from --from is used.')
     p_send.add_argument('--from', '-f', dest='address_from',
@@ -244,6 +247,11 @@ def parse_argv(argv):
         for tpl_field in args.template_fields:
             if '=' not in tpl_field:
                 parser.error(f"Invalid template field syntax: {tpl_field}. Required syntax: FieldName=FieldValue")
+
+    if hasattr(args, 'template_fields_json') and args.template_fields_json:
+        for tpl_field in args.template_fields_json:
+            if '=' not in tpl_field:
+                parser.error(f"Invalid template field syntax: {tpl_field}. Required syntax: FieldName=json")
 
     return args
 
@@ -415,6 +423,7 @@ class SendCommand(AbstractCommand):
                 body_html=self.args.body_html,
                 body_plain=self.args.body_plain,
                 template_fields=self.args.template_fields,
+                template_fields_json=self.args.template_fields_json,
                 headers=self.args.headers,
             )
             message_body = message_builder.execute()

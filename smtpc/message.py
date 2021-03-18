@@ -1,3 +1,4 @@
+import json
 import re
 import smtplib
 import socket
@@ -11,7 +12,7 @@ import structlog
 from . import __version__
 from .defaults import DEFAULTS_VALUES_MESSAGE, DEFAULTS_VALUES_PROFILE
 from .enums import ContentType, ExitCodes
-from .errors import MissingBodyError, InvalidTemplateFieldName
+from .errors import MissingBodyError, InvalidTemplateFieldNameError
 from .predefined_messages import PredefinedMessage
 from .predefined_profiles import PredefinedProfile
 from .utils import exitc, guess_content_type, determine_ssl_tls_by_port
@@ -31,7 +32,7 @@ except ImportError:
 
             data = self.tpl
             for name, value in fields.items():
-                data = re.sub(r'\{\{\s*' + name + r'\s*\}\}', value, data)
+                data = re.sub(r'\{\{\s*' + name + r'\s*\}\}', str(value), data)
 
             return data
 
@@ -41,7 +42,7 @@ class Builder:
         'subject',
         'envelope_from', 'address_from',
         'envelope_to', 'address_to', 'address_cc', 'reply_to',
-        'body_type', 'body_html', 'body_plain', 'template_fields',
+        'body_type', 'body_html', 'body_plain', 'template_fields', 'template_fields_json',
         'headers',
         'predefined_message',
     )
@@ -58,11 +59,13 @@ class Builder:
         body_html: Optional[str] = None,
         body_plain: Optional[str] = None,
         template_fields: Optional[List[str]] = None,
+        template_fields_json: Optional[List[str]] = None,
         headers: Optional[List[str]] = None,
         message: Optional[PredefinedMessage] = None
     ):
         self.predefined_message = message
         self.template_fields = template_fields
+        self.template_fields_json = template_fields_json
 
         message_fields = {
             'subject': subject,
@@ -127,7 +130,7 @@ class Builder:
         setattr(self, name, value)
 
     def template(self, data: str):
-        if not self.template_fields:
+        if not self.template_fields and not self.template_fields_json:
             return data
 
         fields = {}
@@ -135,9 +138,20 @@ class Builder:
             field, value = field.split('=')
             m = re.match(r'^[a-zA-Z0-9_]+$', field)
             if not m:
-                raise InvalidTemplateFieldName('Template field name can contain only ASCII letters,'
+                raise InvalidTemplateFieldNameError('Template field name can contain only ASCII letters,'
                     ' digits and underscores.')
             fields[field] = value
+
+        for field in self.template_fields_json:
+            field, value = field.split('=')
+            m = re.match(r'^[a-zA-Z0-9_]+$', field)
+            if not m:
+                raise InvalidTemplateFieldNameError('Template field name can contain only ASCII letters,'
+                    ' digits and underscores.')
+            try:
+                fields[field] = json.loads(value)
+            except json.decoder.JSONDecodeError as exc:
+                raise InvalidTemplateFieldNameError(f"Invalid json for field \"{field}\": {exc}")
 
         tpl = Template(data)
         data = tpl.render(**fields)

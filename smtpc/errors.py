@@ -6,5 +6,13 @@ class MissingBodyError(SMTPcError):
     pass
 
 
-class InvalidTemplateFieldName(SMTPcError):
+class TemplateError(SMTPcError):
+    pass
+
+
+class InvalidTemplateFieldNameError(TemplateError):
+    pass
+
+
+class InvalidJsonTemplateError(TemplateError):
     pass
