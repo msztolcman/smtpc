@@ -1,9 +1,13 @@
 import os
 import pathlib
+import sys
+import tempfile
 
 import fileperms
+import structlog
 import toml
 
+logger = structlog.get_logger()
 ENV_SMTPC_CONFIG_DIR = 'SMTPC_CONFIG_DIR'
 ENV_XDG_CONFIG_HOME = 'XDG_CONFIG_HOME'
 XDG_CONFIG_HOME = pathlib.Path('.config')
@@ -54,9 +58,30 @@ def save_toml_file(file: pathlib.Path, data: dict):
     file_perms.owner_read = True
     file_perms.owner_write = True
 
-    file.touch(mode=int(file_perms))
-    with file.open('w') as fh:
-        toml.dump(data, fh)
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', dir=file.parent, delete=False, prefix='tmp.', suffix='.toml') as fh:
+            tmp_file = pathlib.Path(fh.name)
+            toml.dump(data, fh)
+    except Exception as exc:
+        logger.error('cannot save config file', file=str(file), message=str(exc))
+        return
+
+    tmp_file.chmod(file_perms)
+
+    bak_file = file.parent / (file.name + '.bak')
+    try:
+        file.rename(bak_file)
+    except Exception as exc:
+        logger.error('cannot create backup file', file=str(bak_file), message=str(exc))
+        return
+
+    try:
+        tmp_file.rename(file)
+    except Exception as exc:
+        logger.error('cannot create new config file', bak_file=str(bak_file), new_config=str(tmp_file), message=str(exc))
+        print(f"Below content should be saved in {file}:", file=sys.stderr)
+        print(toml.dumps(data), file=sys.stderr)
+        return
 
 
 class Config:
