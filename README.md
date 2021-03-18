@@ -42,6 +42,11 @@ Simplest way is to use Python's built-in package system:
 
     python3 -m pip install smtpc
 
+If you want to install Jinja2 modules together for using extended templating features,
+install it like:
+
+    python3 -m pip install smtpc[extended]
+
 You can also use [pipx](https://pipxproject.github.io/pipx/) if you don't want to
 mess with system packages and install `SMTPc` in virtual environment:
 
@@ -101,7 +106,7 @@ But it's not so funny :)
 Also you can use your predefined messages as templates:
 
 ```bash
-smtpc messages add template-test --subject 'Some templated email: {date}' --body-plain 'Some templated email body: {uuid}' --from templated@smtpc.net --to receiver@smtpc.net
+smtpc messages add template-test --subject 'Some templated email: {{ date }}' --body-plain 'Some templated email body: {{ uuid }}' --from templated@smtpc.net --to receiver@smtpc.net
 smtpc send --profile sendria --message template-test --template-field "date=$(date)" --template-field "uuid=$(uuidgen)"
 ```
 
@@ -116,6 +121,32 @@ And the body:
 ```
 Some templated email body: C21B7FF0-C6BC-47C9-B3AC-5554865487E4
 ```
+
+If there is also available [Jinja2](https://jinja.palletsprojects.com) module,
+you can also use it as templating engine!
+
+Templating
+----------
+
+Both, Subject and email body can also be used as a templates. By default, if
+no `--template-field` is specified, then no templating engine is used.
+
+If you will specify any template field, then SMTPc is looking for template engine.
+By default, SMTPc try to use [Jinja2](https://jinja.palletsprojects.com)
+templating system. If this module is not found, then simpler, builtin version is
+used. This simplified engine can just find simple placeholder in format:
+
+    {{ fieldName }}
+
+and replace then with specified data.
+
+Using this simplified engine, `fieldName` can contain only small and big ASCII letters,
+digits and underscore sign. Placeholders are substituted by values, and this is all
+this engine can do :)
+
+However, if there is [Jinja2](https://jinja.palletsprojects.com) found, the possibilities
+of templating are almost endless. For loop, blocks, conditions... Please read more at
+[Jinja2 home](https://jinja.palletsprojects.com).
 
 Authors
 -------
@@ -137,7 +168,8 @@ ChangeLog
 ### v0.6.0
 
 * added `--template-field` param for `send` command, allows to replace
-  some `{fields}` in email body or subject with specified values
+  some `{{ fields }}` in email body or subject with specified values. Or you
+  can also use [Jinja2](https://jinja.palletsprojects.com) if module is installed
 
 ### v0.5.0
 

@@ -5,6 +5,9 @@ requirements = [
     'fileperms',
     'toml',
 ]
+extras_requirements = {
+    'extended': ['Jinja2'],
+}
 
 with open('README.md') as f:
     readme = f.read()
@@ -34,6 +37,7 @@ setup(
         ],
     },
     install_requires=requirements,
+    extras_require=extras_requirements,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',

@@ -18,6 +18,23 @@ from .utils import exitc, guess_content_type, determine_ssl_tls_by_port
 
 logger = structlog.get_logger()
 
+try:
+    from jinja2 import Template
+except ImportError:
+    class Template:
+        def __init__(self, tpl):
+            self.tpl = tpl
+
+        def render(self, **fields):
+            if not fields:
+                return self.tpl
+
+            data = self.tpl
+            for name, value in fields.items():
+                data = re.sub(r'\{\{\s*' + name + r'\s*\}\}', value, data)
+
+            return data
+
 
 class Builder:
     __slots__ = (
@@ -113,14 +130,17 @@ class Builder:
         if not self.template_fields:
             return data
 
+        fields = {}
         for field in self.template_fields:
             field, value = field.split('=')
             m = re.match(r'^[a-zA-Z0-9_]+$', field)
             if not m:
                 raise InvalidTemplateFieldName('Template field name can contain only ASCII letters,'
                     ' digits and underscores.')
-            data = re.sub(r'\{' + field + r'\}', value, data)
+            fields[field] = value
 
+        tpl = Template(data)
+        data = tpl.render(**fields)
         return data
 
 
