@@ -114,6 +114,14 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 ChangeLog
 ---------
 
+### v0.5.0
+
+* safe writing config files: will show file content if writing will fail
+* messages list is simplified by default (just message name like in profiles list)
+* new commands: `smtpc profiles delete`, `smtpc messages delete` - self explanatory I guess :)
+* few minor bugs squashed
+* few internal changes and improvements
+
 ### v0.4.1
 
 * fixed handling --ssl and --tls when sending message using profile
