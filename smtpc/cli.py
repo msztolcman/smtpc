@@ -228,7 +228,7 @@ def parse_argv(argv):
         parser.print_help()
         exitc(ExitCodes.OK)
 
-    if hasattr(args, 'reply_to') and len(args.reply_to) > 1:
+    if hasattr(args, 'reply_to') and args.reply_to and len(args.reply_to) > 1:
         parser.error("Currently only one --reply-to can be used")
 
     return args
