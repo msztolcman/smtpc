@@ -72,9 +72,9 @@ smtpc profiles list
 Now, add few messages for future use:
 
 ```bash
-smtpc messages add plain --subject 'Some plain email' --body-plain 'Some plain message body' --from smtpc@example.com --to receiver@example.net
-smtpc messages add html --subject 'Some html email' --body-html 'Some <b>HTML</b> message body' --from smtpc@example.com --to receiver@example.net
-smtpc messages add alternative --subject 'Some alternative email' --body-plain 'Some plain message body' --body-html 'Some <b>HTML</b> message body' --from smtpc@example.com --to receiver@example.net
+smtpc messages add plain --subject 'Some plain email' --body-plain 'Some plain message body' --from plain@smtpc.net --to receiver@smtpc.net
+smtpc messages add html --subject 'Some html email' --body-html 'Some <b>HTML</b> message body' --from html@smtpc.net --to receiver@smtpc.net
+smtpc messages add alternative --subject 'Some alternative email' --body-plain 'Some plain message body' --body-html 'Some <b>HTML</b> message body' --from alternative@smtpc.net --to receiver@smtpc.net
 ```
 
 You can verify:
@@ -93,7 +93,7 @@ In second example above, we are using predefined message `plain`, but with chang
 Of course, if you don't want, you don't need to use predefined profiles and/or messages, you can pass them directly when sending:
 
 ```bash
-smtpc send --host 127.0.0.1 --port 1025 --body-type html --subject 'Some html email' --body-html 'Some <b>HTML</b> message body' --from smtpc@example.com --to receiver@example.net
+smtpc send --host 127.0.0.1 --port 1025 --body-type html --subject 'Some html email' --body-html 'Some <b>HTML</b> message body' --from not-funny@smtpc.net --to receiver@smtpc.net
 ```
 
 But it's not so funny :)
