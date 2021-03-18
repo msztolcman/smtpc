@@ -98,6 +98,25 @@ smtpc send --host 127.0.0.1 --port 1025 --body-type html --subject 'Some html em
 
 But it's not so funny :)
 
+Also you can use your predefined messages as templates:
+
+```bash
+smtpc messages add template-test --subject 'Some templated email: {date}' --body-plain 'Some templated email body: {uuid}' --from templated@smtpc.net --to receiver@smtpc.net
+smtpc send --profile sendria --message template-test --template-field "date=$(date)" --template-field "uuid=$(uuidgen)"
+```
+
+And received email subject may looks like:
+
+```
+Some templated email: Thu Mar 18 19:05:53 CET 2021
+```
+
+And the body:
+
+```
+Some templated email body: C21B7FF0-C6BC-47C9-B3AC-5554865487E4
+```
+
 Authors
 -------
 
