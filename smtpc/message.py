@@ -13,7 +13,7 @@ from .enums import ContentType, ExitCodes
 from .errors import MissingBodyError
 from .predefined_messages import PredefinedMessage
 from .predefined_profiles import PredefinedProfile
-from .utils import exit, guess_content_type, determine_ssl_tls_by_port
+from .utils import exitc, guess_content_type, determine_ssl_tls_by_port
 
 logger = structlog.get_logger()
 
@@ -213,10 +213,10 @@ class Sender:
                 smtp_code=smtp_code, smtp_message=smtp_message)
         except socket.gaierror as exc:
             self.log_exception('connection error', host=self.host, port=self.port, errno=exc.errno, message=exc.strerror)
-            exit(ExitCodes.CONNECTION_ERROR)
+            exitc(ExitCodes.CONNECTION_ERROR)
         except Exception as exc:
             self.log_exception('connection error', host=self.host, port=self.port, message=str(exc), exception=exc.__class__.__name__)
-            exit(ExitCodes.CONNECTION_ERROR)
+            exitc(ExitCodes.CONNECTION_ERROR)
 
         smtp.ehlo(self.identify_as)
 
@@ -235,7 +235,7 @@ class Sender:
             smtp.sendmail(envelope_from, envelope_to, getattr(self.message_body, 'as_string', lambda: self.message_body)())
         except smtplib.SMTPSenderRefused as exc:
             self.log_exception(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
-            exit(ExitCodes.OTHER)
+            exitc(ExitCodes.OTHER)
         finally:
             smtp.quit()
 

@@ -14,7 +14,7 @@ from .enums import ExitCodes
 from .errors import SMTPcError
 from .predefined_messages import PredefinedMessages, PredefinedMessage
 from .predefined_profiles import PredefinedProfiles, PredefinedProfile
-from .utils import exit, determine_ssl_tls_by_port
+from .utils import exitc, determine_ssl_tls_by_port
 
 logger = structlog.get_logger()
 CONFIG: Optional[Config] = None
@@ -215,18 +215,18 @@ def parse_argv(argv):
             setup_connection_args(args)
         elif not args.subcommand:
             p_profiles.print_help()
-            exit(ExitCodes.OK)
+            exitc(ExitCodes.OK)
 
     elif args.command == 'messages':
         if args.subcommand == 'add':
             setup_message_args(args)
         elif not args.subcommand:
             p_messages.print_help()
-            exit(ExitCodes.OK)
+            exitc(ExitCodes.OK)
 
     else:
         parser.print_help()
-        exit(ExitCodes.OK)
+        exitc(ExitCodes.OK)
 
     if hasattr(args, 'reply_to') and len(args.reply_to) > 1:
         parser.error("Currently only one --reply-to can be used")
@@ -367,7 +367,7 @@ class SendCommand(AbstractCommand):
             self._handle()
         except SMTPcError as exc:
             self.log_exception('exception found', message=str(exc))
-            exit(ExitCodes.OTHER)
+            exitc(ExitCodes.OTHER)
 
     def _handle(self):
         predefined_message = None if not self.args.message else PREDEFINED_MESSAGES[self.args.message]
@@ -456,4 +456,4 @@ def main():
 
     handler.handle()
 
-    exit(ExitCodes.OK)
+    exitc(ExitCodes.OK)
