@@ -26,7 +26,7 @@ def parse_argv(argv):
     content_type_choices = [message.ContentType.PLAIN.value, message.ContentType.HTML.value]
 
     parser = argparse.ArgumentParser('SMTPc')
-    parser.add_argument('--debug', '-D', action='count', default=0,
+    parser.add_argument('--debug', '-D', dest='debug_level', action='count', default=0,
         help='Enable debug messages. Can be used multiple times to increase debug level.')
     version = f'%(prog)s {__version__} (https://github.com/msztolcman/smtpc (c) 2021 Marcin Sztolcman)'
     parser.add_argument('-v', '--version', action='version', version=version,
@@ -259,7 +259,7 @@ class AbstractCommand:
         pass
 
     def log_exception(self, msg, **kwargs):
-        log_method = logger.exception if self.args.debug > 0 else logger.error
+        log_method = logger.exception if self.args.debug_level > 0 else logger.error
         log_method(msg, **kwargs)
 
 
@@ -270,9 +270,9 @@ class ProfilesCommand(AbstractCommand):
         else:
             print('Known profiles:')
             for name, profile in PREDEFINED_PROFILES.items():
-                if self.args.debug > 0:
+                if self.args.debug_level > 0:
                     data = profile.to_dict()
-                    if self.args.debug == 1:
+                    if self.args.debug_level == 1:
                         data['password'] = '***'
                     print(f"- {name} ({data})")
                 else:
@@ -320,7 +320,7 @@ class MessagesCommand(AbstractCommand):
         else:
             print('Known messages:')
             for name, message in PREDEFINED_MESSAGES.items():
-                if self.args.debug > 0:
+                if self.args.debug_level > 0:
                     print(f"- {name} (subject: \"{message.subject or ''}\", "
                           f"from: \"{message.address_from or message.envelope_from}\", "
                           f"to: \"{', '.join(message.address_to or message.envelope_to)}\")")
@@ -405,7 +405,7 @@ class SendCommand(AbstractCommand):
                 predefined_message=predefined_message,
                 connection_timeout=self.args.connection_timeout,
                 source_address=self.args.source_address,
-                debug_level=self.args.debug,
+                debug_level=self.args.debug_level,
                 host=self.args.host,
                 port=self.args.port,
                 identify_as=self.args.identify_as,
@@ -449,7 +449,7 @@ def main():
         logger.error(f"messages configuration error: {exc}")
 
     args = parse_argv(sys.argv[1:])
-    configure_logger(args.debug > 0)
+    configure_logger(args.debug_level > 0)
 
     if args.command == 'profiles':
         handler = ProfilesCommand(args)
