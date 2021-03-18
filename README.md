@@ -126,7 +126,7 @@ ChangeLog
 
 * BC: renamed command: `profile` -> `profiles`
 * added new command: `messages` for managing of saved email messages
-* allow to overwrite profile or message predefined options from CLI arguments
+* allow overwriting profile or message predefined options from CLI arguments
 * cleaner and more elegant code
 
 ### v0.3.0
