@@ -80,6 +80,9 @@ def parse_argv(argv):
         help='Text part of the message for text/html version.')
     p_send.add_argument('--raw-body', action='store_true',
         help='Do not try to generate email body with headers, use content from --body as whole message body.')
+    p_send.add_argument('--template-field', '-I', dest='template_fields', action='append',
+        help='If given, should be in format: "FieldName=FieldValue". Then all occurrences of "{FieldName}" '
+             'in subject or body will be replaced with "value"')
     p_send.add_argument('--envelope-from', '-F',
         help='Sender address for SMTP session. If missing, then address from --from is used.')
     p_send.add_argument('--from', '-f', dest='address_from',
@@ -236,6 +239,11 @@ def parse_argv(argv):
 
     if hasattr(args, 'reply_to') and args.reply_to and len(args.reply_to) > 1:
         parser.error("Currently only one --reply-to can be used")
+
+    if hasattr(args, 'template_fields') and args.template_fields:
+        for tpl_field in args.template_fields:
+            if '=' not in tpl_field:
+                parser.error(f"Invalid template field syntax: {tpl_field}. Required syntax: FieldName=FieldValue")
 
     return args
 
@@ -406,6 +414,7 @@ class SendCommand(AbstractCommand):
                 body_type=self.args.body_type,
                 body_html=self.args.body_html,
                 body_plain=self.args.body_plain,
+                template_fields=self.args.template_fields,
                 headers=self.args.headers,
             )
             message_body = message_builder.execute()

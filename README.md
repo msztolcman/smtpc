@@ -22,6 +22,7 @@ Features
 
 * Easily build email message as `text/plain`, `text/html` or full MIME
   message (`multipart/alternative`)
+* Messages can be a templates with values replaced when sending
 * Handles SMTP authentication, SSL and TLS
 * Profiles allows you to use predefined SMTP servers
 * Predefine messages set and use them for sending
@@ -113,6 +114,11 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 
 ChangeLog
 ---------
+
+### v0.6.0
+
+* added `--template-field` param for `send` command, allows to replace
+  some `{fields}` in email body or subject with specified values
 
 ### v0.5.0
 

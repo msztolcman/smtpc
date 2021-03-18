@@ -1,3 +1,4 @@
+import re
 import smtplib
 import socket
 from email.mime.base import MIMEBase
@@ -10,7 +11,7 @@ import structlog
 from . import __version__
 from .defaults import DEFAULTS_VALUES_MESSAGE, DEFAULTS_VALUES_PROFILE
 from .enums import ContentType, ExitCodes
-from .errors import MissingBodyError
+from .errors import MissingBodyError, InvalidTemplateFieldName
 from .predefined_messages import PredefinedMessage
 from .predefined_profiles import PredefinedProfile
 from .utils import exitc, guess_content_type, determine_ssl_tls_by_port
@@ -23,7 +24,7 @@ class Builder:
         'subject',
         'envelope_from', 'address_from',
         'envelope_to', 'address_to', 'address_cc', 'reply_to',
-        'body_type', 'body_html', 'body_plain',
+        'body_type', 'body_html', 'body_plain', 'template_fields',
         'headers',
         'predefined_message',
     )
@@ -39,10 +40,12 @@ class Builder:
         body_type: ContentType,
         body_html: Optional[str] = None,
         body_plain: Optional[str] = None,
+        template_fields: Optional[List[str]] = None,
         headers: Optional[List[str]] = None,
         message: Optional[PredefinedMessage] = None
     ):
         self.predefined_message = message
+        self.template_fields = template_fields
 
         message_fields = {
             'subject': subject,
@@ -65,24 +68,24 @@ class Builder:
         if self.body_type == ContentType.ALTERNATIVE:
             message = MIMEMultipart('alternative')
             if self.body_plain:
-                message.attach(MIMEText(self.body_plain, 'plain'))
+                message.attach(MIMEText(self.template(self.body_plain), 'plain'))
             if self.body_html:
-                message.attach(MIMEText(self.body_html, 'html'))
+                message.attach(MIMEText(self.template(self.body_html), 'html'))
         elif self.body_type == ContentType.PLAIN:
             if not self.body_plain:
                 raise MissingBodyError("Body type specified as PLAIN, but plain body is missing")
-            message = MIMEText(self.body_plain, 'plain')
+            message = MIMEText(self.template(self.body_plain), 'plain')
         elif self.body_type == ContentType.HTML:
             if not self.body_html:
                 raise MissingBodyError("Body type specified as HTML, but html body is missing")
-            message = MIMEText(self.body_html, 'html')
+            message = MIMEText(self.template(self.body_html), 'html')
 
         for header in self.headers:
             header_name, header_value = header.split('=', 1)
             message[header_name.strip()] = header_value.strip()
 
         if self.subject:
-            message['Subject'] = self.subject
+            message['Subject'] = self.template(self.subject)
         if self.reply_to:
             message['Reply-To'] = self.reply_to[0]
         message['From'] = self.address_from or self.envelope_from
@@ -105,6 +108,20 @@ class Builder:
         if value is None:
             value = defaults[name]
         setattr(self, name, value)
+
+    def template(self, data: str):
+        if not self.template_fields:
+            return data
+
+        for field in self.template_fields:
+            field, value = field.split('=')
+            m = re.match(r'^[a-zA-Z0-9_]+$', field)
+            if not m:
+                raise InvalidTemplateFieldName('Template field name can contain only ASCII letters,'
+                    ' digits and underscores.')
+            data = re.sub(r'\{' + field + r'\}', value, data)
+
+        return data
 
 
 class Sender:
