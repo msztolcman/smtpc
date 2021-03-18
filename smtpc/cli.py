@@ -320,8 +320,12 @@ class MessagesCommand(AbstractCommand):
         else:
             print('Known messages:')
             for name, message in PREDEFINED_MESSAGES.items():
-                print(
-                    f"- {name} (from: \"{message.address_from or message.envelope_from}\", subject: \"{message.subject or ''}\")")
+                if self.args.debug > 0:
+                    print(f"- {name} (subject: \"{message.subject or ''}\", "
+                          f"from: \"{message.address_from or message.envelope_from}\", "
+                          f"to: \"{', '.join(message.address_to or message.envelope_to)}\")")
+                else:
+                    print(f"- {name}")
 
     def edit(self):
         import os
