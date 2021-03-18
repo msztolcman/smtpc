@@ -139,7 +139,7 @@ def parse_argv(argv):
     p_messages_sub = p_messages.add_subparsers(dest='subcommand')
 
     p_messages_edit = p_messages_sub.add_parser('edit', help='Open messages configuration in default editor.')
-    p_messages_list = p_messages_sub.add_parser('list', help='List known connection profiles.')
+    p_messages_list = p_messages_sub.add_parser('list', help='List known messages. Use -D or -DD to see more informations.')
     p_messages_delete = p_messages_sub.add_parser('delete', help='Remove message.')
     p_messages_delete.add_argument('name', nargs=1, choices=PREDEFINED_MESSAGES.keys(),
         help='Name of message to remove.')
