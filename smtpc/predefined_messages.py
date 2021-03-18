@@ -87,7 +87,7 @@ class PredefinedMessages(dict):
                 body_plain=message.get('body_plain'),
                 body_html=message.get('body_html'),
                 body_raw=message.get('body_raw'),
-                body_type=ContentType(guess_content_type(message.get('body_type'), message.get('body_plain'), message.get('body_html'))),
+                body_type=guess_content_type(message.get('body_type'), message.get('body_plain'), message.get('body_html')),
                 headers=message.get('headers'),
             )
 
