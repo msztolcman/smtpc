@@ -117,7 +117,7 @@ class Builder:
         else:
             message['To'] = ', '.join(self.envelope_to)
 
-        message['User-Agent'] = f'SMTPc/{__version__} (https://github.com/msztolcman/smtpc (c) 2021 Marcin Sztolcman)'
+        message['User-Agent'] = f'SMTPc/{__version__} (https://smtpc.net (c) 2021 Marcin Sztolcman)'
 
         return message
 

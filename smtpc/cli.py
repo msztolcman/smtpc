@@ -28,7 +28,7 @@ def parse_argv(argv):
     parser = argparse.ArgumentParser('SMTPc')
     parser.add_argument('--debug', '-D', dest='debug_level', action='count', default=0,
         help='Enable debug messages. Can be used multiple times to increase debug level.')
-    version = f'%(prog)s {__version__} (https://github.com/msztolcman/smtpc (c) 2021 Marcin Sztolcman)'
+    version = f'%(prog)s {__version__} (https://smtpc.net (c) 2021 Marcin Sztolcman)'
     parser.add_argument('-v', '--version', action='version', version=version,
         help='Display the version and exit.')
 
