@@ -68,8 +68,8 @@ class Builder:
         headers: Optional[List[str]] = None,
         predefined_message: Optional[PredefinedMessage] = None
     ):
-        self.template_fields = template_fields
-        self.template_fields_json = template_fields_json
+        self.template_fields = template_fields or []
+        self.template_fields_json = template_fields_json or []
 
         message_fields = {
             'subject': subject,
