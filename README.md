@@ -6,9 +6,14 @@ SMTPc
 [![smtpc python compatibility](https://img.shields.io/pypi/pyversions/smtpc.svg)](https://pypi.python.org/pypi/smtpc)
 [![say thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/marcin%40urzenia.net)
 
-SMTPc is simple SMTP client for easy mail sending. It's purpose is to help
-developers test and/or verify SMTP servers or configuration. It's also useful if you
-are sending email of constant content from daemons or other crons.
+SMTPc is simple SMTP client for easy mail sending from CLI. It's dedicated
+for developers, however it's easy to use and every CLI user will be satisfied
+using this.
+
+Main purpose of SMTPc is to help developers test and/or verify SMTP servers or
+their SMTP configuration. But of course it can be used in every place you want
+to automate any system, and use predefined messages (with templates) for
+notifications, like daemons or crons.
 
 If you like this tool, just [say thanks](https://saythanks.io/to/marcin%40urzenia.net).
 
@@ -20,32 +25,31 @@ Current stable version
 Features
 --------
 
-* Easily build email message as `text/plain`, `text/html` or full MIME
-  message (`multipart/alternative`)
-* Messages can be a templates with values replaced when sending
-* Handles SMTP authentication, SSL and TLS
-* Profiles allows you to use predefined SMTP servers
-* Predefine messages set and use them for sending
-* Allow for using different from/to email addresses for SMTP session and
-  email headers
-* Allow specifying own email headers
-* Allow using particular IP address in case when your host has more then one
+* Predefined profiles for using with many SMTP servers
+* Predefined messages for sending messages just by the name
+* Automatically build message from given parameters, do not glue headers manually
+* Templating system using Jinja2 module for customizing messages
+* Of course, handling authorization, SSL and TLS connections
+* You can easily spoof your own messages, by specifying other sender/recipient in
+  message headers, and other one for SMTP session
+* Easily add own email headers
+* If you have multiple IP addresses available, choose which one you want to use
 * It's all Python!
 
 Installation
 ------------
 
 `SMTPc` should work on any POSIX platform where [Python](http://python.org)
-is available, it means Linux, MacOS/OSX etc.
+is available, it means Linux, macOS/OSX etc.
 
 Simplest way is to use Python's built-in package system:
 
-    python3 -m pip install smtpc
-
-If you want to install Jinja2 modules together for using extended templating features,
-install it like:
-
     python3 -m pip install smtpc[extended]
+
+It will install SMTPc and related packages for best user experience. If you want
+to install simplest version without additions, then start with:
+
+    python3 -m pip install smtpc
 
 You can also use [pipx](https://pipxproject.github.io/pipx/) if you don't want to
 mess with system packages and install `SMTPc` in virtual environment:
@@ -82,12 +86,12 @@ smtpc messages add html --subject 'Some html email' --body-html 'Some <b>HTML</b
 smtpc messages add alternative --subject 'Some alternative email' --body-plain 'Some plain message body' --body-html 'Some <b>HTML</b> message body' --from alternative@smtpc.net --to receiver@smtpc.net
 ```
 
-You can verify:
+And verification:
 ```bash
 smtpc messages list
 ```
 
-Now, send something:
+Now, let send something:
 
 ```bash
 smtpc send --profile sendria --message alternative
@@ -124,30 +128,74 @@ Some templated email body: C21B7FF0-C6BC-47C9-B3AC-5554865487E4
 
 If there is also available [Jinja2](https://jinja.palletsprojects.com) module,
 you can also use it as templating engine!
+See more in [Templating chapter](#Templating).
 
 Templating
 ----------
 
-Both, Subject and email body can also be used as a templates. By default, if
-no `--template-field` or `--template-field-json` is specified, then no
-templating engine is used.
+Templating can be realized in simple and extended form. In simplest case, when
+[Jinja2](https://jinja.palletsprojects.com) module is not found, SMTPc can only
+substitute some placeholders with any data. For example, if you will specify
+subject as:
+```
+--subject "Now we have {{ date }}"
+```
 
-If you will specify any template field, then SMTPc is looking for template engine.
-By default, SMTPc try to use [Jinja2](https://jinja.palletsprojects.com)
-templating system. If this module is not found, then simpler, builtin version is
-used. This simplified engine can just find simple placeholder in format:
+and when sending:
 
-    {{ fieldName }}
+```angular2html
+--template-field "date=$(date +"%Y-%m-%dT%H:%M:%S%Z")"
+```
 
-and replace then with specified data.
+And email will look like:
 
-Using this simplified engine, `fieldName` can contain only small and big ASCII letters,
-digits and underscore sign. Placeholders are substituted by values, and this is all
-this engine can do :)
+```
+Now we have 2021-03-19T10:56:31CET
+```
 
-However, if there is [Jinja2](https://jinja.palletsprojects.com) found, the possibilities
-of templating are almost endless. For loop, blocks, conditions... Please read more at
-[Jinja2 home](https://jinja.palletsprojects.com).
+But it can't handle conditions, loops and any other complicated and convenient example.
+
+If you need some more, you need to install [Jinja2](https://jinja.palletsprojects.com)
+module (more: [Installation](#Installation)).
+Now, you have the full power of one of best templating engines Python has. Here you have an example:
+
+```bash
+smtpc messages add template-test --subject 'Some of my projects, state on {{ date }}' --from templated@smtpc.net --to receiver@smtpc.net --body-html '<p>Here I am!</p>
+{% if projects %}
+<p>Some of my projects:</p>
+<ul>
+{% for project in projects %}
+    <li><a href="https://github.com/msztolcman/{{ project }}">{{ project }}</a></li>
+{% endfor %}
+</ul>
+{% else %}
+<p>I have no projects to show :(</p>
+{% endif %}
+<p>Thats all folks!</p>'
+smtpc send --profile sendria --message template-test --template-field "date=$(date -u +'%Y-%m-%dT%H:%M:%S%Z')" --template-field-json='projects=["sendria", "smtpc", "versionner", "ff"]'
+```
+
+And you will receive an email with subject:
+
+```
+Some of my projects, state on 2021-03-19T10:03:56UTC
+```
+
+And body (slightly reformatted here):
+
+```html
+<p>Here I am!</p>
+<p>Some of my projects:</p>
+<ul>
+    <li><a href="https://github.com/msztolcman/sendria">sendria</a></li>
+    <li><a href="https://github.com/msztolcman/smtpc">smtpc</a></li>
+    <li><a href="https://github.com/msztolcman/versionner">versionner</a></li>
+    <li><a href="https://github.com/msztolcman/ff">ff</a></li>
+</ul>
+<p>Thats all folks!</p>
+```
+
+Please read more about Jinja2 capabilities on [Jinja2 homepage](https://jinja.palletsprojects.com).
 
 Authors
 -------
