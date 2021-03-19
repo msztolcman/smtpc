@@ -283,11 +283,11 @@ class Sender:
         smtp.ehlo(self.identify_as)
 
         if self.tls:
-            logger.debug('upgrade connection to tls')
+            logger.debug('upgrading connection to tls')
             smtp.starttls()
 
         if self.login and self.password:
-            logger.debug('call login, will authorize when required', login=self.login)
+            logger.debug('calling login, will authorize when required', login=self.login)
             smtp.login(self.login, self.password)
 
         envelope_from = self.envelope_from or self.address_from
