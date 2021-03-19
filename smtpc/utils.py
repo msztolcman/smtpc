@@ -10,7 +10,7 @@ def exitc(err_code: ExitCodes):
     sys.exit(err_code.value)
 
 
-def guess_content_type(body_type: Optional[str], body_plain: Optional[str], body_html: Optional[str]) -> ContentType:
+def guess_content_type(body_type: Optional[Union[ContentType, str]], body_plain: Optional[str], body_html: Optional[str]) -> ContentType:
     if body_type in ('plain', 'html'):
         body_type = ContentType(body_type)
     elif body_plain and body_html:

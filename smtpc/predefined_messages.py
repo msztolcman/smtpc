@@ -27,7 +27,7 @@ class PredefinedMessage:
         body_plain: Optional[str] = None,
         body_html: Optional[str] = None,
         body_raw: Optional[str] = None,
-        body_type: Optional[str] = None,
+        body_type: Optional[ContentType] = None,
         headers: Optional[List[str]] = None,
     ):
         self.name = name

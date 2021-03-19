@@ -10,7 +10,7 @@ import toml.decoder
 from . import __version__
 from . import message
 from .config import ensure_config_files, PREDEFINED_PROFILES_FILE, PREDEFINED_MESSAGES_FILE, Config
-from .enums import ExitCodes
+from .enums import ExitCodes, ContentType
 from .errors import SMTPcError
 from .predefined_messages import PredefinedMessages, PredefinedMessage
 from .predefined_profiles import PredefinedProfiles, PredefinedProfile
@@ -377,7 +377,7 @@ class MessagesCommand(AbstractCommand):
             body_plain=self.args.body_plain,
             body_html=self.args.body_html,
             body_raw=self.args.body if self.args.raw_body else None,
-            body_type=self.args.body_type,
+            body_type=ContentType(self.args.body_type),
             headers=self.args.headers,
         ))
         # TODO: shouldn't be logger call
@@ -419,7 +419,7 @@ class SendCommand(AbstractCommand):
                 address_to=self.args.address_to,
                 address_cc=self.args.address_cc,
                 reply_to=self.args.reply_to,
-                body_type=self.args.body_type,
+                body_type=ContentType(self.args.body_type),
                 body_html=self.args.body_html,
                 body_plain=self.args.body_plain,
                 template_fields=self.args.template_fields,
