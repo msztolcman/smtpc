@@ -346,11 +346,11 @@ class MessagesCommand(AbstractCommand):
             print('No known messages')
         else:
             print('Known messages:')
-            for name, message in PREDEFINED_MESSAGES.items():
+            for name, predefined_message in PREDEFINED_MESSAGES.items():
                 if self.args.debug_level > 0:
-                    print(f"- {name} (subject: \"{message.subject or ''}\", "
-                          f"from: \"{message.address_from or message.envelope_from}\", "
-                          f"to: \"{', '.join(message.address_to or message.envelope_to)}\")")
+                    print(f"- {name} (subject: \"{predefined_message.subject or ''}\", "
+                          f"from: \"{predefined_message.address_from or predefined_message.envelope_from}\", "
+                          f"to: \"{', '.join(predefined_message.address_to or predefined_message.envelope_to)}\")")
                 else:
                     print(f"- {name}")
 
@@ -411,7 +411,7 @@ class SendCommand(AbstractCommand):
             message_body = self.args.body
         else:
             message_builder = message.Builder(
-                message=predefined_message,
+                predefined_message=predefined_message,
                 subject=self.args.subject,
                 envelope_from=self.args.envelope_from,
                 address_from=self.args.address_from,

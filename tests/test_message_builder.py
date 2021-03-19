@@ -15,7 +15,7 @@ def test_builder_simple():
         body_html=None,
         body_plain='some body',
         headers=[],
-        message=None,
+        predefined_message=None,
     )
 
     assert builder.subject == 'some subject'

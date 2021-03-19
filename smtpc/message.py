@@ -61,7 +61,7 @@ class Builder:
         template_fields: Optional[List[str]] = None,
         template_fields_json: Optional[List[str]] = None,
         headers: Optional[List[str]] = None,
-        message: Optional[PredefinedMessage] = None
+        predefined_message: Optional[PredefinedMessage] = None
     ):
         self.predefined_message = message
         self.template_fields = template_fields
@@ -81,7 +81,7 @@ class Builder:
             'headers': headers,
         }
         for name in message_fields:
-            self._set_property(name, message_fields[name], message, DEFAULTS_VALUES_MESSAGE)
+            self._set_property(name, message_fields[name], predefined_message, DEFAULTS_VALUES_MESSAGE)
         self.body_type = guess_content_type(self.body_type, self.body_plain, self.body_html)
 
     def execute(self) -> MIMEBase:
