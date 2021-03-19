@@ -139,27 +139,36 @@ class Builder:
 
         fields = {}
         for field in self.template_fields:
-            field, value = field.split('=')
-            m = re.match(r'^[a-zA-Z0-9_]+$', field)
-            if not m:
-                raise InvalidTemplateFieldNameError('Template field name can contain only ASCII letters,'
-                    ' digits and underscores.')
+            field, value = self._template_parse_field(field)
             fields[field] = value
 
         for field in self.template_fields_json:
-            field, value = field.split('=')
-            m = re.match(r'^[a-zA-Z0-9_]+$', field)
-            if not m:
-                raise InvalidTemplateFieldNameError('Template field name can contain only ASCII letters,'
-                    ' digits and underscores.')
-            try:
-                fields[field] = json.loads(value)
-            except json.decoder.JSONDecodeError as exc:
-                raise InvalidTemplateFieldNameError(f"Invalid json for field \"{field}\": {exc}")
+            field, value = self._template_parse_field(field, True)
+            fields[field] = value
 
         tpl = Template(data)
         data = tpl.render(**fields)
         return data
+
+    @classmethod
+    def _template_parse_field(cls, field, is_json=False):
+        field, value = field.split('=', 1)
+        cls._template_validate_field_name(field)
+        if not is_json:
+            return field, value
+
+        try:
+            value = json.loads(value)
+        except json.decoder.JSONDecodeError as exc:
+            raise InvalidJsonTemplateError(f"Invalid json for field \"{field}\": {exc}")
+        return field, value
+
+    @classmethod
+    def _template_validate_field_name(cls, name):
+        m = re.match(r'^[a-zA-Z0-9_]+$', name)
+        if not m:
+            raise InvalidTemplateFieldNameError('Template field name can contain only ASCII letters,'
+                ' digits and underscores.')
 
 
 class Sender:
