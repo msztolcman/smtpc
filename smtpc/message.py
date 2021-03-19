@@ -14,7 +14,7 @@ import structlog
 from . import __version__
 from .defaults import DEFAULTS_VALUES_MESSAGE, DEFAULTS_VALUES_PROFILE
 from .enums import ContentType, ExitCodes
-from .errors import MissingBodyError, InvalidTemplateFieldNameError
+from .errors import MissingBodyError, InvalidTemplateFieldNameError, InvalidJsonTemplateError
 from .predefined_messages import PredefinedMessage
 from .predefined_profiles import PredefinedProfile
 from .utils import exitc, guess_content_type, determine_ssl_tls_by_port

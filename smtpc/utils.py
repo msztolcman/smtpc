@@ -1,7 +1,7 @@
 __all__ = ['guess_content_type', 'determine_ssl_tls_by_port', 'exitc']
 
 import sys
-from typing import Optional
+from typing import Optional, Union
 
 from .enums import ContentType, ExitCodes
 
