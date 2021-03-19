@@ -171,7 +171,7 @@ smtpc messages add template-test --subject 'Some of my projects, state on {{ dat
 {% else %}
 <p>I have no projects to show :(</p>
 {% endif %}
-<p>Thats all folks!</p>'
+<p>That&#39;s all folks!</p>'
 smtpc send --profile sendria --message template-test --template-field "date=$(date -u +'%Y-%m-%dT%H:%M:%S%Z')" --template-field-json='projects=["sendria", "smtpc", "versionner", "ff"]'
 ```
 
@@ -192,7 +192,7 @@ And body (slightly reformatted here):
     <li><a href="https://github.com/msztolcman/versionner">versionner</a></li>
     <li><a href="https://github.com/msztolcman/ff">ff</a></li>
 </ul>
-<p>Thats all folks!</p>
+<p>That&#39;s all folks!</p>
 ```
 
 Please read more about Jinja2 capabilities on [Jinja2 homepage](https://jinja.palletsprojects.com).
