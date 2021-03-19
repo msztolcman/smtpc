@@ -48,7 +48,6 @@ class Builder:
         'envelope_to', 'address_to', 'address_cc', 'reply_to',
         'body_type', 'body_html', 'body_plain', 'template_fields', 'template_fields_json',
         'headers',
-        'predefined_message',
     )
 
     def __init__(self, *,
@@ -67,7 +66,6 @@ class Builder:
         headers: Optional[List[str]] = None,
         predefined_message: Optional[PredefinedMessage] = None
     ):
-        self.predefined_message = message
         self.template_fields = template_fields
         self.template_fields_json = template_fields_json
 
@@ -198,8 +196,6 @@ class Sender:
         predefined_message: Optional[PredefinedMessage],
         dry_run: Optional[bool],
     ):
-        self.predefined_profile = predefined_profile
-        self.predefined_message = predefined_message
         self.debug_level = debug_level
         self.message_body = message_body
         self.dry_run = dry_run
