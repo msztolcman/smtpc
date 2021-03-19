@@ -19,22 +19,26 @@ from .utils import exitc, guess_content_type, determine_ssl_tls_by_port
 
 logger = structlog.get_logger()
 
+
+class SimpleTemplate:
+    def __init__(self, tpl):
+        self.tpl = tpl
+
+    def render(self, **fields):
+        if not fields:
+            return self.tpl
+
+        data = self.tpl
+        for name, value in fields.items():
+            data = re.sub(r'\{\{\s*' + name + r'\s*\}\}', str(value), data)
+
+        return data
+
+
 try:
     from jinja2 import Template
 except ImportError:
-    class Template:
-        def __init__(self, tpl):
-            self.tpl = tpl
-
-        def render(self, **fields):
-            if not fields:
-                return self.tpl
-
-            data = self.tpl
-            for name, value in fields.items():
-                data = re.sub(r'\{\{\s*' + name + r'\s*\}\}', str(value), data)
-
-            return data
+    Template = SimpleTemplate
 
 
 class Builder:
