@@ -419,7 +419,7 @@ class SendCommand(AbstractCommand):
                 address_to=self.args.address_to,
                 address_cc=self.args.address_cc,
                 reply_to=self.args.reply_to,
-                body_type=ContentType(self.args.body_type),
+                body_type=self.args.body_type,
                 body_html=self.args.body_html,
                 body_plain=self.args.body_plain,
                 template_fields=self.args.template_fields,
