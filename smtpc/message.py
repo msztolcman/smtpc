@@ -86,7 +86,7 @@ class Builder:
         }
         for name in message_fields:
             self._set_property(name, message_fields[name], predefined_message, DEFAULTS_VALUES_MESSAGE)
-        self.body_type = guess_content_type(self.body_type, self.body_plain, self.body_html)
+        self.body_type = guess_content_type(self.body_type.value, self.body_plain, self.body_html)
 
     def execute(self) -> MIMEBase:
         if self.body_type == ContentType.ALTERNATIVE:
