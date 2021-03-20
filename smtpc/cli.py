@@ -407,6 +407,7 @@ class SendCommand(AbstractCommand):
 
     def _message_interactive(self, body) -> str:
         with tempfile.NamedTemporaryFile('w+', delete=False) as fh:
+            logger.debug('using temporary file for message interactive', path=fh.name)
             if hasattr(body, 'as_string'):
                 body = body.as_string()
             fh.write(body)
@@ -419,6 +420,7 @@ class SendCommand(AbstractCommand):
 
         try:
             os.unlink(fh.name)
+            logger.debug('removed temporary file', path=fh.name)
         except Exception as exc:
             self.log_exception('cannot remove remporary file', path=fh.name, message=str(exc))
 
