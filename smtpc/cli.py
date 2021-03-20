@@ -1,7 +1,10 @@
 import argparse
 import logging
+import os
 import smtplib
+import subprocess
 import sys
+import tempfile
 from typing import Optional
 
 import structlog
@@ -14,7 +17,7 @@ from .enums import ExitCodes, ContentType
 from .errors import SMTPcError
 from .predefined_messages import PredefinedMessages, PredefinedMessage
 from .predefined_profiles import PredefinedProfiles, PredefinedProfile
-from .utils import exitc, determine_ssl_tls_by_port
+from .utils import exitc, determine_ssl_tls_by_port, get_editor
 
 logger = structlog.get_logger()
 CONFIG: Optional[Config] = None
@@ -103,6 +106,9 @@ def parse_argv(argv):
         help='How to fill Reply-To header.')
     p_send.add_argument('--header', '-H', dest='headers', action='append',
         help='Additional headers in format: HeaderName=HeaderValue. Can be used multiple times.')
+    p_send.add_argument('--message-interactive', action='store_true',
+        help='Just after creating raw message open editor with raw message body. '
+             'Allow to edit and send modified version.')
 
     # PROFILES command
     p_profiles = sub.add_parser('profiles', help="Manage connection profiles.")
@@ -301,10 +307,7 @@ class ProfilesCommand(AbstractCommand):
                     print(f"- {name}")
 
     def edit(self):
-        import os
-        import subprocess
-
-        editor = os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim'
+        editor = get_editor()
         logger.debug(f'editor: {editor}')
         cmd = [editor, str(PREDEFINED_PROFILES_FILE), ]
         subprocess.run(cmd)
@@ -355,10 +358,7 @@ class MessagesCommand(AbstractCommand):
                     print(f"- {name}")
 
     def edit(self):
-        import os
-        import subprocess
-
-        editor = os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim'
+        editor = get_editor()
         logger.debug(f'editor: {editor}')
         cmd = [editor, str(PREDEFINED_MESSAGES_FILE), ]
         subprocess.run(cmd)
@@ -405,6 +405,25 @@ class SendCommand(AbstractCommand):
             self.log_exception('exception found', message=str(exc))
             exitc(ExitCodes.OTHER)
 
+    def _message_interactive(self, body) -> str:
+        with tempfile.NamedTemporaryFile('w+', delete=False) as fh:
+            if hasattr(body, 'as_string'):
+                body = body.as_string()
+            fh.write(body)
+
+        cmd = [get_editor(), fh.name]
+        subprocess.run(cmd)
+
+        with open(fh.name, 'r') as fh:
+            body = fh.read()
+
+        try:
+            os.unlink(fh.name)
+        except Exception as exc:
+            self.log_exception('cannot remove remporary file', path=fh.name, message=str(exc))
+
+        return body
+
     def _handle(self):
         predefined_message = None if not self.args.message else PREDEFINED_MESSAGES[self.args.message]
         if not predefined_message and self.args.raw_body:
@@ -427,6 +446,9 @@ class SendCommand(AbstractCommand):
                 headers=self.args.headers,
             )
             message_body = message_builder.execute()
+
+        if self.args.message_interactive:
+            message_body = self._message_interactive(message_body)
 
         if self.args.profile:
             profile = PREDEFINED_PROFILES[self.args.profile]

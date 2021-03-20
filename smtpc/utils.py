@@ -1,5 +1,6 @@
 __all__ = ['guess_content_type', 'determine_ssl_tls_by_port', 'exitc']
 
+import os
 import sys
 from typing import Optional, Union
 
@@ -8,6 +9,10 @@ from .enums import ContentType, ExitCodes
 
 def exitc(err_code: ExitCodes):
     sys.exit(err_code.value)
+
+
+def get_editor():
+    return os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim'
 
 
 def guess_content_type(body_type: Optional[Union[ContentType, str]], body_plain: Optional[str], body_html: Optional[str]) -> ContentType:

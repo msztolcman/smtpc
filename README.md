@@ -28,6 +28,7 @@ Features
 * Predefined profiles for using with many SMTP servers
 * Predefined messages for sending messages just by the name
 * Automatically build message from given parameters, do not glue headers manually
+* Ability to edit raw message body just before sending
 * Templating system using Jinja2 module for customizing messages
 * Of course, handling authorization, SSL and TLS connections
 * You can easily spoof your own messages, by specifying other sender/recipient in
@@ -213,6 +214,13 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 
 ChangeLog
 ---------
+
+### v0.7.0
+
+* added `--message-interactive` param for `send` command. Allows editing of
+  raw message body just before sending
+* changed url in `User-Agent` header and when `--version` is called to `smtpc.net`
+* many internal fixes and rewrites, added few new tests
 
 ### v0.6.0
 
