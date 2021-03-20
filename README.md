@@ -6,11 +6,11 @@ SMTPc
 [![smtpc python compatibility](https://img.shields.io/pypi/pyversions/smtpc.svg)](https://pypi.python.org/pypi/smtpc)
 [![say thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/marcin%40urzenia.net)
 
-SMTPc is simple SMTP client for easy mail sending from CLI. It's dedicated
+`SMTPc` is simple SMTP client for easy mail sending from CLI. It's dedicated
 for developers, however it's easy to use and every CLI user will be satisfied
 using this.
 
-Main purpose of SMTPc is to help developers test and/or verify SMTP servers or
+Main purpose of `SMTPc` is to help developers test and/or verify SMTP servers or
 their SMTP configuration. But of course it can be used in every place you want
 to automate any system, and use predefined messages (with templates) for
 notifications, like daemons or crons.
@@ -46,7 +46,7 @@ Simplest way is to use Python's built-in package system:
 
     python3 -m pip install smtpc[extended]
 
-It will install SMTPc and related packages for best user experience. If you want
+It will install `SMTPc` and related packages for best user experience. If you want
 to install simplest version without additions, then start with:
 
     python3 -m pip install smtpc
@@ -134,7 +134,7 @@ Templating
 ----------
 
 Templating can be realized in simple and extended form. In simplest case, when
-[Jinja2](https://jinja.palletsprojects.com) module is not found, SMTPc can only
+[Jinja2](https://jinja.palletsprojects.com) module is not found, `SMTPc` can only
 substitute some placeholders with any data. For example, if you will specify
 subject as:
 ```
