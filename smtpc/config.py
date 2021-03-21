@@ -10,6 +10,7 @@ import toml
 logger = structlog.get_logger()
 ENV_SMTPC_CONFIG_DIR = 'SMTPC_CONFIG_DIR'
 ENV_XDG_CONFIG_HOME = 'XDG_CONFIG_HOME'
+ENV_SMTPC_SALT = 'SMTPC_SALT'
 XDG_CONFIG_HOME = pathlib.Path('.config')
 CONFIG_DIRNAME = 'smtpc'
 

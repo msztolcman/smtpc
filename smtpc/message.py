@@ -316,7 +316,7 @@ class Sender:
             return password
 
         if password.startswith('enc:'):
-            password = encryption.decrypt(password, os.environ.get('SMTPC_SALT', ''), key)
+            password = encryption.decrypt(password, os.environ.get(config.ENV_SMTPC_SALT, ''), key)
         elif password.startswith('raw:'):
             password = password[4:]
         return password

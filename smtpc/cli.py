@@ -254,7 +254,7 @@ def parse_argv(argv):
                 if not encryption:
                     parser.error('No password encryption support found. Do you have "cryptography" module installed?')
                 password_key = getpass.getpass('Key for password encryption: ')
-                args.password = encryption.encrypt(args.password, os.environ.get('SMTPC_SALT', ''), password_key)
+                args.password = encryption.encrypt(args.password, os.environ.get(config.ENV_SMTPC_SALT, ''), password_key)
 
         elif not args.subcommand:
             p_profiles.print_help()
