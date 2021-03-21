@@ -6,7 +6,8 @@ requirements = [
     'toml',
 ]
 extras_requirements = {
-    'extended': ['Jinja2', 'colorama'],
+    'extended': ['Jinja2', 'colorama', ],
+    'secure': ['cryptography', ],
 }
 
 with open('README.md') as f:
