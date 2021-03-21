@@ -16,3 +16,7 @@ class InvalidTemplateFieldNameError(TemplateError):
 
 class InvalidJsonTemplateError(TemplateError):
     pass
+
+
+class InvalidPasswordKeyError(SMTPcError):
+    pass

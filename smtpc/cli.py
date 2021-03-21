@@ -1,4 +1,5 @@
 import argparse
+import getpass
 import logging
 import os
 import smtplib
@@ -18,6 +19,11 @@ from .errors import SMTPcError
 from .predefined_messages import PredefinedMessages, PredefinedMessage
 from .predefined_profiles import PredefinedProfiles, PredefinedProfile
 from .utils import exitc, determine_ssl_tls_by_port, get_editor
+
+try:
+    from . import encryption
+except ImportError:
+    encryption = None
 
 logger = structlog.get_logger()
 CONFIG: Optional[Config] = None
@@ -128,6 +134,8 @@ def parse_argv(argv):
     p_profiles_add.add_argument('--password', '-p', nargs='?', default=sentinel,
         help='Password for SMTP authentication. Required if --login was given. If no password was passed, will ask '
              'interactively in a safe way.')
+    p_profiles_add.add_argument('--encrypt-password', action='store_true',
+        help='If given, then will store password encrypted (will ask for password to... password :) )')
     p_profiles_add.add_argument('--host', '-s',
         help='SMTP server. Can be also together with port, ie: 127.0.0.1:465.')
     p_profiles_add.add_argument('--port', '-o', type=int,
@@ -208,6 +216,14 @@ def parse_argv(argv):
                 except ValueError:
                     parser.error(f"SMTP port: invalid int value: {port}")
 
+        if hasattr(args, 'password'):
+            # --password wasn't passed at all
+            if args.password is sentinel:
+                args.password = None
+            # -- password was passed, but no value has been give - interactive
+            elif args.password is None:
+                args.password = getpass.getpass()
+
         if (args.login and not args.password) or (not args.login and args.password):
             parser.error("Required both or none: --login, --password")
 
@@ -227,15 +243,6 @@ def parse_argv(argv):
                 if '=' not in header:
                     parser.error(f"Invalid header syntax: {header}. Required syntax: HeaderName=HeaderValue")
 
-    if args.command in ('send', 'profiles'):
-        # --password wasn't passed at all
-        if args.password is sentinel:
-            args.password = None
-        # -- password was passed, but no value has been give - interactive
-        elif args.password is None:
-            import getpass
-            args.password = getpass.getpass()
-
     if args.command == 'send':
         setup_connection_args(args)
         setup_message_args(args)
@@ -243,6 +250,12 @@ def parse_argv(argv):
     elif args.command == 'profiles':
         if args.subcommand == 'add':
             setup_connection_args(args)
+            if args.encrypt_password:
+                if not encryption:
+                    parser.error('No password encryption support found. Do you have "cryptography" module installed?')
+                password_key = getpass.getpass('Key for password encryption: ')
+                args.password = encryption.encrypt(args.password, os.environ.get('SMTPC_SALT', ''), password_key)
+
         elif not args.subcommand:
             p_profiles.print_help()
             exitc(ExitCodes.OK)
@@ -438,6 +451,13 @@ class SendCommand(AbstractCommand):
 
         return body
 
+    def _get_password_key(self):
+        if not encryption:
+            raise SMTPcError('No password encryption support found, but password for profile '
+                'is encrypted. Do you have "cryptography" module installed?')
+        password_key = getpass.getpass('Key for password decryption: ')
+        return password_key
+
     def _handle(self):
         predefined_message = None if not self.args.message else PREDEFINED_MESSAGES[self.args.message]
         if not predefined_message and self.args.raw_body:
@@ -464,10 +484,12 @@ class SendCommand(AbstractCommand):
         if self.args.message_interactive:
             message_body = self._message_interactive(message_body)
 
+        password_key = None
+        profile = None
         if self.args.profile:
             profile = PREDEFINED_PROFILES[self.args.profile]
-        else:
-            profile = None
+            if self.args.password is None and profile.password and profile.password.startswith('enc:'):
+                password_key = self._get_password_key()
 
         try:
             send_message = message.Sender(
@@ -483,6 +505,7 @@ class SendCommand(AbstractCommand):
                 ssl=self.args.ssl,
                 login=self.args.login,
                 password=self.args.password,
+                password_key=password_key,
                 envelope_from=self.args.envelope_from,
                 address_from=self.args.address_from,
                 envelope_to=self.args.envelope_to,

@@ -1,6 +1,7 @@
 __all__ = ['Builder', 'Sender']
 
 import json
+import os
 import re
 import smtplib
 import socket
@@ -18,6 +19,11 @@ from .errors import MissingBodyError, InvalidTemplateFieldNameError, InvalidJson
 from .predefined_messages import PredefinedMessage
 from .predefined_profiles import PredefinedProfile
 from .utils import exitc, guess_content_type, determine_ssl_tls_by_port
+
+try:
+    from . import encryption
+except ImportError:
+    encryption = None
 
 logger = structlog.get_logger()
 
@@ -195,6 +201,7 @@ class Sender:
         no_ssl: bool,
         login: Optional[str],
         password: Optional[str],
+        password_key: Optional[str],
         envelope_from: Optional[str],
         address_from: Optional[str],
         envelope_to: Optional[List[str]],
@@ -225,6 +232,8 @@ class Sender:
         }
         for name in profile_fields:
             self._set_property(name, profile_fields[name], predefined_profile, DEFAULTS_VALUES_PROFILE)
+
+        self.password = self.prepare_password(self.password, password_key)
 
         if any(item is not None for item in [port, ssl, tls, no_ssl, no_tls]):
             self.ssl, self.tls = determine_ssl_tls_by_port(port, ssl, tls, no_ssl, no_tls)
@@ -300,6 +309,16 @@ class Sender:
             exitc(ExitCodes.OTHER)
         finally:
             smtp.quit()
+
+    def prepare_password(self, password, key):
+        if password is None:
+            return password
+
+        if password.startswith('enc:'):
+            password = encryption.decrypt(password, os.environ.get('SMTPC_SALT', ''), key)
+        elif password.startswith('raw:'):
+            password = password[4:]
+        return password
 
     def _set_property(self, name: str, initial: Any, low_prio: Optional[PredefinedMessage], defaults: dict):
         value = initial

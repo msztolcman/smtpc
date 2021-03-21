@@ -28,6 +28,7 @@ Features
 * Predefined profiles for using with many SMTP servers
 * Predefined messages for sending messages just by the name
 * Automatically build message from given parameters, do not glue headers manually
+* Store passwords encrypted if you want
 * Ability to edit raw message body just before sending
 * Templating system using Jinja2 module for customizing messages
 * Of course, handling authorization, SSL and TLS connections
@@ -219,6 +220,9 @@ ChangeLog
 
 * `send` and `profiles` commands: ask for password if `--password` param
   was used with no argument
+* when adding new profile, you can choose to encrypt your password. In this
+  case you will be asked for encryption key. The same key must be used then to
+  decrypt password when sending.
 
 ### v0.7.0
 
