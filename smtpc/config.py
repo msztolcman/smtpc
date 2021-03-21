@@ -2,6 +2,7 @@ import os
 import pathlib
 import sys
 import tempfile
+from typing import Optional
 
 import fileperms
 import structlog
@@ -13,6 +14,18 @@ ENV_XDG_CONFIG_HOME = 'XDG_CONFIG_HOME'
 ENV_SMTPC_SALT = 'SMTPC_SALT'
 XDG_CONFIG_HOME = pathlib.Path('.config')
 CONFIG_DIRNAME = 'smtpc'
+CONFIG_DIR: Optional[pathlib.Path]
+PREDEFINED_PROFILES_FILE: Optional[pathlib.Path]
+CONFIG_FILE: Optional[pathlib.Path]
+PREDEFINED_MESSAGES_FILE: Optional[pathlib.Path]
+
+
+def _generate_paths():
+    global CONFIG_DIR, PREDEFINED_PROFILES_FILE, CONFIG_FILE, PREDEFINED_MESSAGES_FILE
+    CONFIG_DIR = get_config_dir()
+    PREDEFINED_PROFILES_FILE = CONFIG_DIR / 'profiles.toml'
+    CONFIG_FILE = CONFIG_DIR / 'config.toml'
+    PREDEFINED_MESSAGES_FILE = CONFIG_DIR / 'messages.toml'
 
 
 def get_config_dir() -> pathlib.Path:
@@ -29,10 +42,7 @@ def get_config_dir() -> pathlib.Path:
     return pathlib.Path(xdg_config_home_dir) / CONFIG_DIRNAME
 
 
-CONFIG_DIR = get_config_dir()
-PREDEFINED_PROFILES_FILE = CONFIG_DIR / 'profiles.toml'
-CONFIG_FILE = CONFIG_DIR / 'config.toml'
-PREDEFINED_MESSAGES_FILE = CONFIG_DIR / 'messages.toml'
+_generate_paths()
 
 
 def ensure_config_files():
