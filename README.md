@@ -215,6 +215,11 @@ If you find bug or have an idea to enhance this tool, please use GitHub's
 ChangeLog
 ---------
 
+### v0.8.0
+
+* `send` and `profiles` commands: ask for password if `--password` param
+  was used with no argument
+
 ### v0.7.0
 
 * added `--message-interactive` param for `send` command. Allows editing of

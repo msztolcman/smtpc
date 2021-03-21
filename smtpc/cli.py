@@ -27,6 +27,7 @@ PREDEFINED_MESSAGES: Optional[PredefinedMessages] = None
 
 def parse_argv(argv):
     content_type_choices = [message.ContentType.PLAIN.value, message.ContentType.HTML.value]
+    sentinel = object()
 
     parser = argparse.ArgumentParser('SMTPc')
     parser.add_argument('--debug', '-D', dest='debug_level', action='count', default=0,
@@ -49,8 +50,9 @@ def parse_argv(argv):
     # SEND command - profile configuration stuff
     p_send.add_argument('--login', '-l',
         help='Login for SMTP authentication. Required if --password was given.')
-    p_send.add_argument('--password', '-p',
-        help='Password for SMTP authentication. Required if --login was given.')
+    p_send.add_argument('--password', '-p', nargs='?', default=sentinel,
+        help = 'Password for SMTP authentication. Required if --login was given. If no password was passed, will ask '
+               'interactively in a safe way.')
     p_send.add_argument('--host', '-s',
         help='SMTP server. Can be also together with port, ie: 127.0.0.1:465.')
     p_send.add_argument('--port', '-o', type=int,
@@ -123,8 +125,9 @@ def parse_argv(argv):
     p_profiles_add.add_argument('name', nargs=1, help='Unique name of connection profile.')
     p_profiles_add.add_argument('--login', '-l',
         help='Login for SMTP authentication. Required if --password was given.')
-    p_profiles_add.add_argument('--password', '-p',
-        help='Password for SMTP authentication. Required if --login was given.')
+    p_profiles_add.add_argument('--password', '-p', nargs='?', default=sentinel,
+        help='Password for SMTP authentication. Required if --login was given. If no password was passed, will ask '
+             'interactively in a safe way.')
     p_profiles_add.add_argument('--host', '-s',
         help='SMTP server. Can be also together with port, ie: 127.0.0.1:465.')
     p_profiles_add.add_argument('--port', '-o', type=int,
@@ -223,6 +226,15 @@ def parse_argv(argv):
             for header in args.headers:
                 if '=' not in header:
                     parser.error(f"Invalid header syntax: {header}. Required syntax: HeaderName=HeaderValue")
+
+    if args.command in ('send', 'profiles'):
+        # --password wasn't passed at all
+        if args.password is sentinel:
+            args.password = None
+        # -- password was passed, but no value has been give - interactive
+        elif args.password is None:
+            import getpass
+            args.password = getpass.getpass()
 
     if args.command == 'send':
         setup_connection_args(args)
