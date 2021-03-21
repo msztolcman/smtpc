@@ -3,7 +3,7 @@ from typing import Optional
 
 import toml
 
-from .config import PREDEFINED_PROFILES_FILE, save_toml_file
+from . import config
 
 
 class PredefinedProfile:
@@ -57,7 +57,7 @@ class PredefinedProfile:
 class PredefinedProfiles(dict):
     @classmethod
     def read(cls) -> 'PredefinedProfiles':
-        with PREDEFINED_PROFILES_FILE.open('r') as fh:
+        with config.PREDEFINED_PROFILES_FILE.open('r') as fh:
             data = toml.load(fh)
 
         p = cls()
@@ -82,7 +82,7 @@ class PredefinedProfiles(dict):
 
     def add(self, new_profile: PredefinedProfile):
         self[new_profile.name] = new_profile
-        save_toml_file(PREDEFINED_PROFILES_FILE, {
+        config.save_toml_file(config.PREDEFINED_PROFILES_FILE, {
             'profiles': {
                 name: profile.to_dict()
                 for name, profile in self.items()
@@ -92,7 +92,7 @@ class PredefinedProfiles(dict):
     def delete(self, profile_name: str):
         del self[profile_name]
 
-        save_toml_file(PREDEFINED_PROFILES_FILE, {
+        config.save_toml_file(config.PREDEFINED_PROFILES_FILE, {
             'profiles': {
                 name: profile.to_dict()
                 for name, profile in self.items()

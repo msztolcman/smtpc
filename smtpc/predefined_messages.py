@@ -3,7 +3,7 @@ from typing import Optional, List
 
 import toml
 
-from .config import PREDEFINED_MESSAGES_FILE, save_toml_file
+from . import config
 from .enums import ContentType
 from .utils import guess_content_type
 
@@ -66,7 +66,7 @@ class PredefinedMessage:
 class PredefinedMessages(dict):
     @classmethod
     def read(cls) -> 'PredefinedMessages':
-        with PREDEFINED_MESSAGES_FILE.open('r') as fh:
+        with config.PREDEFINED_MESSAGES_FILE.open('r') as fh:
             data = toml.load(fh)
 
         m = cls()
@@ -95,7 +95,7 @@ class PredefinedMessages(dict):
 
     def add(self, new_message: PredefinedMessage):
         self[new_message.name] = new_message
-        save_toml_file(PREDEFINED_MESSAGES_FILE, {
+        config.save_toml_file(config.PREDEFINED_MESSAGES_FILE, {
             'messages': {
                 name: message.to_dict()
                 for name, message in self.items()
@@ -104,7 +104,7 @@ class PredefinedMessages(dict):
 
     def delete(self, message_name: str):
         del self[message_name]
-        save_toml_file(PREDEFINED_MESSAGES_FILE, {
+        config.save_toml_file(config.PREDEFINED_MESSAGES_FILE, {
             'messages': {
                 name: message.to_dict()
                 for name, message in self.items()

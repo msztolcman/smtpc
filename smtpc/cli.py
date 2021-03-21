@@ -13,7 +13,7 @@ import toml.decoder
 
 from . import __version__
 from . import message
-from .config import ensure_config_files, PREDEFINED_PROFILES_FILE, PREDEFINED_MESSAGES_FILE, Config
+from . import config
 from .enums import ExitCodes, ContentType
 from .errors import SMTPcError
 from .predefined_messages import PredefinedMessages, PredefinedMessage
@@ -26,7 +26,7 @@ except ImportError:
     encryption = None
 
 logger = structlog.get_logger()
-CONFIG: Optional[Config] = None
+CONFIG: Optional[config.Config] = None
 PREDEFINED_PROFILES: Optional[PredefinedProfiles] = None
 PREDEFINED_MESSAGES: Optional[PredefinedMessages] = None
 
@@ -334,7 +334,7 @@ class ProfilesCommand(AbstractCommand):
     def edit(self):
         editor = get_editor()
         logger.debug(f'editor: {editor}')
-        cmd = [editor, str(PREDEFINED_PROFILES_FILE), ]
+        cmd = [editor, str(config.PREDEFINED_PROFILES_FILE), ]
         subprocess.run(cmd)
 
     def delete(self):
@@ -385,7 +385,7 @@ class MessagesCommand(AbstractCommand):
     def edit(self):
         editor = get_editor()
         logger.debug(f'editor: {editor}')
-        cmd = [editor, str(PREDEFINED_MESSAGES_FILE), ]
+        cmd = [editor, str(config.PREDEFINED_MESSAGES_FILE), ]
         subprocess.run(cmd)
 
     def add(self):
@@ -524,7 +524,7 @@ class SendCommand(AbstractCommand):
 
 
 def main():
-    ensure_config_files()
+    config.ensure_config_files()
 
     global PREDEFINED_PROFILES, PREDEFINED_MESSAGES
     try:

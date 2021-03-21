@@ -13,6 +13,7 @@ from typing import Optional, List, Any, Union
 import structlog
 
 from . import __version__
+from . import config
 from .defaults import DEFAULTS_VALUES_MESSAGE, DEFAULTS_VALUES_PROFILE
 from .enums import ContentType, ExitCodes
 from .errors import MissingBodyError, InvalidTemplateFieldNameError, InvalidJsonTemplateError
