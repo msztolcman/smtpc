@@ -523,7 +523,9 @@ class SendCommand(AbstractCommand):
             logger.error(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
 
 
-def main():
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
     config.ensure_config_files()
 
     global PREDEFINED_PROFILES, PREDEFINED_MESSAGES
@@ -541,7 +543,7 @@ def main():
         # TODO: shouldn't be logger call?
         logger.error(f"messages configuration error: {exc}")
 
-    args = parse_argv(sys.argv[1:])
+    args = parse_argv(argv)
     configure_logger(args.debug_level > 0)
 
     if args.command == 'profiles':
