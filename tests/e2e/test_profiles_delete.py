@@ -35,8 +35,19 @@ def test_delete_profile_valid(tmpdir, capsys):
     assert 'simple1' in profiles
     assert profiles['simple1'] == {'host': 'localhost'}
 
+    r = callsmtpc(['profiles', 'add', 'simple2', '--host', 'localhost'], capsys)
+
+    assert r.code == ExitCodes.OK.value
+    data = load_toml_file(tmpdir.join(config.PREDEFINED_PROFILES_FILE.name))
+    profiles = data['profiles']
+    assert 'simple1' in profiles
+    assert profiles['simple1'] == {'host': 'localhost'}
+    assert 'simple2' in profiles
+    assert profiles['simple2'] == {'host': 'localhost'}
+
     r = callsmtpc(['profiles', 'delete', 'simple1'], capsys)
     assert r.code == ExitCodes.OK.value
     data = load_toml_file(tmpdir.join(config.PREDEFINED_PROFILES_FILE.name))
     profiles = data['profiles']
-    assert profiles == {}
+    assert 'simple2' in profiles
+    assert profiles['simple2'] == {'host': 'localhost'}
