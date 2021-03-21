@@ -253,7 +253,7 @@ class Sender:
             self._set_property(name, message_fields[name], predefined_message, DEFAULTS_VALUES_MESSAGE)
 
         if self.debug_level > 1:
-            logger.debug('profiles settings', **{k: getattr(self, k) for k in profile_fields})
+            logger.debug('profiles settings', **{k: getattr(self, k) if k != 'password' else '***' for k in profile_fields})
             logger.debug('message settings', **{k: getattr(self, k) for k in message_fields})
 
     def execute(self):
