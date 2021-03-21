@@ -11,25 +11,25 @@ from smtpc.enums import ExitCodes
 from . import *
 
 
-def test_config_files_created(tmpdir, capsys):
-    os.environ[config.ENV_SMTPC_CONFIG_DIR] = str(tmpdir)
+def test_config_files_created(tmp_path, capsys):
+    os.environ[config.ENV_SMTPC_CONFIG_DIR] = str(tmp_path)
     callsmtpc(capsys=capsys)
 
-    config_file = tmpdir.join(config.CONFIG_FILE.name)
+    config_file = tmp_path / config.CONFIG_FILE.name
     assert config_file.exists(), f'Config file {config_file} not created'
 
     with config_file.open('r') as fh:
         data = toml.load(fh)
         assert data == {'smtpc': {}}, f'Config file {config_file} has invalid content'
 
-    profiles_file = tmpdir.join(config.PREDEFINED_PROFILES_FILE.name)
+    profiles_file = tmp_path / config.PREDEFINED_PROFILES_FILE.name
     assert profiles_file.exists(), f'Profiles file {profiles_file} not created'
 
     with profiles_file.open('r') as fh:
         data = toml.load(fh)
         assert data == {'profiles': {}}, f'Profiles file {profiles_file} has invalid content'
 
-    messages_file = tmpdir.join(config.PREDEFINED_MESSAGES_FILE.name)
+    messages_file = tmp_path / config.PREDEFINED_MESSAGES_FILE.name
     assert messages_file.exists(), f'Messages file {messages_file} not created'
 
     with messages_file.open('r') as fh:
@@ -37,8 +37,8 @@ def test_config_files_created(tmpdir, capsys):
         assert data == {'messages': {}}, f'Messages file {messages_file} has invalid content'
 
 
-def test_add_profile_missing_login_password(tmpdir, capsys):
-    os.environ[config.ENV_SMTPC_CONFIG_DIR] = str(tmpdir)
+def test_add_profile_missing_login_password(tmp_path, capsys):
+    os.environ[config.ENV_SMTPC_CONFIG_DIR] = str(tmp_path)
 
     r = callsmtpc(['profiles', 'add', 'simple', '--login'], capsys)
     assert r.code == ExitCodes.OTHER.value
@@ -107,39 +107,39 @@ def test_add_profile_missing_login_password(tmpdir, capsys):
         {'host': 'localhost', 'connection_timeout': 10, 'source_address': '1.1.1.1', 'identify_as': 'smtpc.net'}
     ],
 ])
-def test_add_profile(tmpdir, capsys, params, expected):
-    os.environ[config.ENV_SMTPC_CONFIG_DIR] = str(tmpdir)
+def test_add_profile(tmp_path, capsys, params, expected):
+    os.environ[config.ENV_SMTPC_CONFIG_DIR] = str(tmp_path)
     r = callsmtpc(['profiles', 'add', 'simple1', *params], capsys)
 
     assert r.code == ExitCodes.OK.value
-    data = load_toml_file(tmpdir.join(config.PREDEFINED_PROFILES_FILE.name))
+    data = load_toml_file(tmp_path / config.PREDEFINED_PROFILES_FILE.name)
     profiles = data['profiles']
     assert 'simple1' in profiles
     assert profiles['simple1'] == expected
 
 
-def test_add_profile_interactive_password(tmpdir, capsys):
-    os.environ[config.ENV_SMTPC_CONFIG_DIR] = str(tmpdir)
+def test_add_profile_interactive_password(tmp_path, capsys):
+    os.environ[config.ENV_SMTPC_CONFIG_DIR] = str(tmp_path)
 
     with mock.patch('getpass.getpass', lambda: 'pass'):
         r = callsmtpc(['profiles', 'add', 'simple1', '--login', 'asd', '--password'], capsys)
 
     assert r.code == ExitCodes.OK.value
-    data = load_toml_file(tmpdir.join(config.PREDEFINED_PROFILES_FILE.name))
+    data = load_toml_file(tmp_path / config.PREDEFINED_PROFILES_FILE.name)
     profiles = data['profiles']
     assert 'simple1' in profiles
     assert profiles['simple1'] == {'login': 'asd', 'password': 'pass'}
 
 
-def test_add_profile_encrypt_password(tmpdir, capsys):
-    os.environ[config.ENV_SMTPC_CONFIG_DIR] = str(tmpdir)
+def test_add_profile_encrypt_password(tmp_path, capsys):
+    os.environ[config.ENV_SMTPC_CONFIG_DIR] = str(tmp_path)
     os.environ[config.ENV_SMTPC_SALT] = 'testsalt'
 
     with mock.patch('getpass.getpass', lambda p: 'key'):
         r = callsmtpc(['profiles', 'add', 'simple1', '--login', 'asd', '--password', 'pass', '--encrypt-password'], capsys)
 
     assert r.code == ExitCodes.OK.value
-    data = load_toml_file(tmpdir.join(config.PREDEFINED_PROFILES_FILE.name))
+    data = load_toml_file(tmp_path / config.PREDEFINED_PROFILES_FILE.name)
     profiles = data['profiles']
     assert 'simple1' in profiles
     assert 'login' in profiles['simple1']
