@@ -77,7 +77,7 @@ def save_toml_file(file: pathlib.Path, data: dict):
         logger.error('cannot save config file', file=str(file), message=str(exc))
         return
 
-    tmp_file.chmod(file_perms)
+    tmp_file.chmod(int(file_perms))
 
     bak_file = None
     if file.exists():
