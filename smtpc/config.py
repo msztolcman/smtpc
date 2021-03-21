@@ -68,12 +68,14 @@ def save_toml_file(file: pathlib.Path, data: dict):
 
     tmp_file.chmod(file_perms)
 
-    bak_file = file.parent / (file.name + '.bak')
-    try:
-        file.rename(bak_file)
-    except Exception as exc:
-        logger.error('cannot create backup file', file=str(bak_file), message=str(exc))
-        return
+    bak_file = None
+    if file.exists():
+        bak_file = file.parent / (file.name + '.bak')
+        try:
+            file.rename(bak_file)
+        except Exception as exc:
+            logger.error('cannot create backup file', file=str(bak_file), message=str(exc))
+            return
 
     try:
         tmp_file.rename(file)
