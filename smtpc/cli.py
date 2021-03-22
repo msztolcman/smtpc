@@ -406,7 +406,7 @@ class MessagesCommand(AbstractCommand):
             body_plain=self.args.body_plain,
             body_html=self.args.body_html,
             body_raw=self.args.body if self.args.raw_body else None,
-            body_type=ContentType(self.args.body_type),
+            body_type=self.args.body_type,
             headers=self.args.headers,
         ))
         # TODO: shouldn't be logger call

@@ -1,5 +1,5 @@
 import enum
-from typing import Optional, List
+from typing import Optional, List, Union
 
 import toml
 
@@ -27,7 +27,7 @@ class PredefinedMessage:
         body_plain: Optional[str] = None,
         body_html: Optional[str] = None,
         body_raw: Optional[str] = None,
-        body_type: Optional[ContentType] = None,
+        body_type: Optional[Union[ContentType, str]] = None,
         headers: Optional[List[str]] = None,
     ):
         self.name = name
@@ -42,7 +42,7 @@ class PredefinedMessage:
         self.body_plain = body_plain
         self.body_html = body_html
         self.body_raw = body_raw
-        self.body_type = body_type
+        self.body_type = guess_content_type(body_type, body_plain, body_html)
         self.headers = headers
 
     def to_dict(self):
