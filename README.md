@@ -12,7 +12,7 @@ for developers, however it's easy to use and every CLI user will be satisfied
 using this.
 
 Main purpose of `SMTPc` is to help developers test and/or verify SMTP servers or
-their SMTP configuration. But of course it can be used in every place you want
+their SMTP configuration. Of course, it can be used in every place you want
 to automate any system, and use predefined messages (with templates) for
 notifications, like daemons or crons.
 
@@ -249,11 +249,11 @@ ChangeLog
 
 ### v0.4.1
 
-* fixed handling --ssl and --tls when sending message using profile
-* added simple --dry-run option
-* added --reply-to option
+* fixed handling `--ssl` and `--tls` when sending message using profile
+* added simple `--dry-run` option
+* added `--reply-to` option
 * minor fixes to error handling
-* added User-Agent header to generated messages
+* added `User-Agent` header to generated messages
 
 ### v0.4.0
 
@@ -272,7 +272,7 @@ ChangeLog
 
 ### v0.1.1
 
-* fixed --version
+* fixed `--version`
 
 ### v0.1.0
 
