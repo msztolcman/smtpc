@@ -18,7 +18,7 @@ upload-test: ## upload distro to test Pypi
 	twine upload --repository testpypi dist/smtpc*
 
 test: ## run test suite
-	pytest -x --nf --ff
+	pytest --nf --ff -q
 
 .DEFAULT_GOAL := help
 help:
