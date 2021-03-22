@@ -229,12 +229,12 @@ def parse_argv(argv):
 
     def setup_message_args(args):
         if not getattr(args, 'message', False) and not args.envelope_from and not args.address_from:
-            parser.error('Any from (--envelope-from or --from) required' + (
+            parser.error('Any sender (--envelope-from or --from) required' + (
                 ' if --message not specified' if not hasattr(args, 'message') else ''
             ))
 
         if not getattr(args, 'message', False) and not args.envelope_to and not args.address_to and not args.address_cc and not args.address_bcc:
-            parser.error('Any from (--envelope-to,--to, --cc, --bcc) required' + (
+            parser.error('Any receiver (--envelope-to,--to, --cc, --bcc) required' + (
                 ' if --message not specified' if not hasattr(args, 'message') else ''
             ))
 
