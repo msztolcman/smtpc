@@ -14,7 +14,7 @@ import toml.decoder
 from . import __version__
 from . import message
 from . import config
-from .enums import ExitCodes, ContentType
+from .enums import ExitCodes
 from .errors import SMTPcError
 from .predefined_messages import PredefinedMessages, PredefinedMessage
 from .predefined_profiles import PredefinedProfiles, PredefinedProfile
