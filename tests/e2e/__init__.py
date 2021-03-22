@@ -1,4 +1,4 @@
-__all__ = ['CallResult', 'callsmtpc', 'load_toml_file']
+__all__ = ['CallResult', 'callsmtpc', 'load_toml_file', 'smtpctmppath']
 
 from collections import namedtuple
 from unittest import mock
@@ -42,3 +42,7 @@ def load_toml_file(name):
     return data
 
 
+@pytest.fixture
+def smtpctmppath(tmp_path, monkeypatch):
+    monkeypatch.setenv(config.ENV_SMTPC_CONFIG_DIR, str(tmp_path))
+    return tmp_path
