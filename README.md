@@ -4,9 +4,10 @@ SMTPc
 [![smtpc version](https://img.shields.io/pypi/v/smtpc.svg)](https://pypi.python.org/pypi/smtpc)
 [![smtpc license](https://img.shields.io/pypi/l/smtpc.svg)](https://pypi.python.org/pypi/smtpc)
 [![smtpc python compatibility](https://img.shields.io/pypi/pyversions/smtpc.svg)](https://pypi.python.org/pypi/smtpc)
+[![Downloads](https://static.pepy.tech/personalized-badge/smtpc?period=total&units=international_system&left_color=grey&right_color=yellow&left_text=Downloads)](https://pepy.tech/project/smtpc)
 [![say thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/marcin%40urzenia.net)
 
-`SMTPc` is simple SMTP client for easy mail sending from CLI. It's dedicated
+`SMTPc` is simple SMTP client for easy mail sending using CLI. It's dedicated
 for developers, however it's easy to use and every CLI user will be satisfied
 using this.
 
