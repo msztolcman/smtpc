@@ -1,4 +1,4 @@
-__all__ = ['guess_content_type', 'determine_ssl_tls_by_port', 'exitc']
+__all__ = ['guess_content_type', 'determine_ssl_tls_by_port', 'exitc', 'get_editor']
 
 import os
 import sys
