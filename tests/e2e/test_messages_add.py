@@ -186,9 +186,8 @@ def test_add_message_error(smtpctmppath, capsys, params, expected_in_err):
                 'body_html': 'some html body',
             }
         ],
-        [
+        pytest.param(
             [
-                'SKIP',
                 '--from', 'smtpc@smtpc.net', '--to', 'receiver@smtpc.net',
                 '--body', 'some body',
             ],
@@ -196,8 +195,9 @@ def test_add_message_error(smtpctmppath, capsys, params, expected_in_err):
                 'address_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net'],
                 'body_type': ContentType.PLAIN.value,
                 'body_plain': 'some body',
-            }
-        ],
+            },
+            marks=pytest.mark.skip(reason='not finished yet')
+        ),
     ],
     ids=[
         'no body, just body type',
@@ -210,9 +210,6 @@ def test_add_message_error(smtpctmppath, capsys, params, expected_in_err):
     ]
 )
 def test_add_message_body_valid(smtpctmppath, capsys, params, expected):
-    if 'SKIP' in params:
-        pytest.skip(f"Test with params: {params} skipped")
-
     r = callsmtpc(['messages', 'add', 'simple1', *params], capsys)
 
     assert r.code == ExitCodes.OK.value
