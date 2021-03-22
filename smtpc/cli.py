@@ -243,6 +243,10 @@ def parse_argv(argv):
                 if '=' not in header:
                     parser.error(f"Invalid header syntax: {header}. Required syntax: HeaderName=HeaderValue")
 
+        if args.raw_body and (args.body_plain or args.body_html or args.body_type):
+            parser.error('Cannot use --raw-body together with any of: --body-plain, --body-html, --body-type. '
+                'Use --raw-body only with --body param')
+
     if args.command == 'send':
         setup_connection_args(args)
         setup_message_args(args)
