@@ -1,5 +1,3 @@
-import os
-
 from smtpc import config
 from smtpc.enums import ExitCodes
 

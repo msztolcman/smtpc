@@ -104,7 +104,7 @@ def test_add_profile_missing_login_password(smtpctmppath, capsys):
         {'host': 'localhost', 'connection_timeout': 10, 'source_address': '1.1.1.1', 'identify_as': 'smtpc.net'}
     ],
 ])
-def test_add_profile(smtpctmppath, capsys, params, expected):
+def test_add_profile_valid(smtpctmppath, capsys, params, expected):
     r = callsmtpc(['profiles', 'add', 'simple1', *params], capsys)
 
     assert r.code == ExitCodes.OK.value

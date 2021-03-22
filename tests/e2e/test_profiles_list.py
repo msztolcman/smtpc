@@ -1,19 +1,17 @@
-import os
-
 from smtpc import config
 from smtpc.enums import ExitCodes
 
 from . import *
 
 
-def test_list_empty(smtpctmppath, capsys):
+def test_list_profiles_empty(smtpctmppath, capsys):
     r = callsmtpc(['profiles', 'list'], capsys)
 
     assert r.code == ExitCodes.OK.value
     assert 'No known profiles\n' == r.out, 'Profiles list not empty?'
 
 
-def test_list_profiles(smtpctmppath, capsys):
+def test_list_profiles_valid(smtpctmppath, capsys):
     r = callsmtpc(['profiles', 'add', 'simple1', '--host', 'localhost', '--login', 'asd', '--password', 'qwe'], capsys)
 
     assert r.code == ExitCodes.OK.value
