@@ -7,11 +7,11 @@ SMTPc
 [![Downloads](https://static.pepy.tech/personalized-badge/smtpc?period=total&units=international_system&left_color=grey&right_color=yellow&left_text=Downloads)](https://pepy.tech/project/smtpc)
 [![say thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/marcin%40urzenia.net)
 
-`SMTPc` is simple SMTP client for easy mail sending using CLI. It's dedicated
+`SMTPc` is a simple SMTP client for easy mail sending using CLI. It's dedicated
 for developers, however it's easy to use and every CLI user will be satisfied
 using this.
 
-Main purpose of `SMTPc` is to help developers test and/or verify SMTP servers or
+The main purpose of `SMTPc` is to help developers test and/or verify SMTP servers or
 their SMTP configuration. Of course, it can be used in every place you want
 to automate any system, and use predefined messages (with templates) for
 notifications, like daemons or crons.
@@ -26,16 +26,16 @@ Current stable version
 Features
 --------
 
-* Predefined profiles for using with many SMTP servers
-* Predefined messages for sending messages just by the name
+* Predefined profiles for use with many SMTP servers
+* Predefined messages for sending messages just by referencing the message name
 * Automatically build message from given parameters, do not glue headers manually
-* Store passwords encrypted if you want
+* Store passwords in an encrypted form (optionally)
 * Ability to edit raw message body just before sending
-* Templating system using Jinja2 module for customizing messages
-* Of course, handling authorization, SSL and TLS connections
+* Templating system customizing messages (with Jinja2)
+* SSL and TLS connections, of course
 * You can easily spoof your own messages, by specifying other sender/recipient in
   message headers, and other one for SMTP session
-* Easily add own email headers
+* Easily add custom email headers
 * If you have multiple IP addresses available, choose which one you want to use
 * It's all Python!
 
@@ -43,14 +43,14 @@ Installation
 ------------
 
 `SMTPc` should work on any POSIX platform where [Python](http://python.org)
-is available, it means Linux, macOS/OSX etc.
+is available. This includes Linux, macOS/OSX etc.
 
-Simplest way is to use Python's built-in package system:
+The simplest way is to use Python's built-in package system:
 
     python3 -m pip install 'smtpc[extended]'
 
-It will install `SMTPc` and related packages for best user experience. If you want
-to install simplest version without additions, then start with:
+It will install `SMTPc` and related packages for the best user experience. If you want
+to install the basic version without additions, then start with:
 
     python3 -m pip install smtpc
 
@@ -69,19 +69,20 @@ Python version
 How to use
 ----------
 
-First, add some account you want to use for sending. In this example we are using
-[Sendria](https://github.com/msztolcman/sendria) run on local environment:
+First, add the account that you want to use for sending. In this example we are using
+[Sendria](https://github.com/msztolcman/sendria), which runs on our local environment:
 
 ```bash
 smtpc profiles add sendria --host 127.0.0.1 --port 1025
 ```
 
-You can verify:
+You can verify that the profile is stored:
+
 ```bash
 smtpc profiles list
 ```
 
-Now, add few messages for future use:
+Now, add a few messages for future use:
 
 ```bash
 smtpc messages add plain --subject 'Some plain email' --body-plain 'Some plain message body' --from plain@smtpc.net --to receiver@smtpc.net
@@ -89,78 +90,80 @@ smtpc messages add html --subject 'Some html email' --body-html 'Some <b>HTML</b
 smtpc messages add alternative --subject 'Some alternative email' --body-plain 'Some plain message body' --body-html 'Some <b>HTML</b> message body' --from alternative@smtpc.net --to receiver@smtpc.net
 ```
 
-And verification:
+You can verify that your messages are stored:
+
 ```bash
 smtpc messages list
 ```
 
-Now, let send something:
+Now, lets send some emails:
 
 ```bash
 smtpc send --profile sendria --message alternative
 smtpc send --profile sendria --message plain --subject 'Changed subject for plain'
 ```
-In second example above, we are using predefined message `plain`, but with changed subject.
+In the second example above, we are using a predefined message named `plain`, but with a changed subject.
 
-Of course, if you don't want, you don't need to use predefined profiles and/or messages, you can pass them directly when sending:
+You don't need to use any predefined profiles or messages. You can just pass them directly when sending:
 
 ```bash
 smtpc send --host 127.0.0.1 --port 1025 --body-type html --subject 'Some html email' --body-html 'Some <b>HTML</b> message body' --from not-funny@smtpc.net --to receiver@smtpc.net
 ```
 
-But it's not so funny :)
+But it's not where the fun is :)
 
-Also you can use your predefined messages as templates:
+You can also use your predefined messages as templates:
 
 ```bash
 smtpc messages add template-test --subject 'Some templated email: {{ date }}' --body-plain 'Some templated email body: {{ uuid }}' --from templated@smtpc.net --to receiver@smtpc.net
 smtpc send --profile sendria --message template-test --template-field "date=$(date)" --template-field "uuid=$(uuidgen)"
 ```
 
-And received email subject may looks like:
+So when the email is received, the subject will look like this:
 
 ```
 Some templated email: Thu Mar 18 19:05:53 CET 2021
 ```
 
-And the body:
+and the body will look like this:
 
 ```
 Some templated email body: C21B7FF0-C6BC-47C9-B3AC-5554865487E4
 ```
 
-If there is also available [Jinja2](https://jinja.palletsprojects.com) module,
-you can also use it as templating engine!
+If [Jinja2](https://jinja.palletsprojects.com) module is available,
+you can use it as a templating engine!
 See more in [Templating chapter](#Templating).
 
 Templating
 ----------
 
-Templating can be realized in simple and extended form. In simplest case, when
+Templating can be done in both simple and extended forms. In the simplest case, when
 [Jinja2](https://jinja.palletsprojects.com) module is not found, `SMTPc` can only
-substitute some placeholders with any data. For example, if you will specify
-subject as:
+substitute simple placeholders with data.
+
+For example, if you specify the subject as:
+
 ```
 --subject "Now we have {{ date }}"
 ```
 
-and when sending:
+and when sending you provide a value:
 
 ```angular2html
 --template-field "date=$(date +"%Y-%m-%dT%H:%M:%S%Z")"
 ```
 
-And email will look like:
+then in the final email it will look like:
 
 ```
 Now we have 2021-03-19T10:56:31CET
 ```
 
-But it can't handle conditions, loops and any other complicated and convenient example.
+But if you want to add conditions, loops or any other more complex syntax, you will need
+to install [Jinja2](https://jinja.palletsprojects.com) module (more: [Installation](#Installation)).
 
-If you need some more, you need to install [Jinja2](https://jinja.palletsprojects.com)
-module (more: [Installation](#Installation)).
-Now, you have the full power of one of best templating engines Python has. Here you have an example:
+You willl then have the full power of one of best templating engines Python has. Here's an example:
 
 ```bash
 smtpc messages add template-test --subject 'Some of my projects, state on {{ date }}' --from templated@smtpc.net --to receiver@smtpc.net --body-html '<p>Here I am!</p>
@@ -178,13 +181,13 @@ smtpc messages add template-test --subject 'Some of my projects, state on {{ dat
 smtpc send --profile sendria --message template-test --template-field "date=$(date -u +'%Y-%m-%dT%H:%M:%S%Z')" --template-field-json='projects=["sendria", "smtpc", "versionner", "ff"]'
 ```
 
-And you will receive an email with subject:
+So when the email is received, the subject will look like this:
 
 ```
 Some of my projects, state on 2021-03-19T10:03:56UTC
 ```
 
-And body (slightly reformatted here):
+and the body (slightly reformatted here):
 
 ```html
 <p>Here I am!</p>
@@ -198,7 +201,7 @@ And body (slightly reformatted here):
 <p>That&#39;s all folks!</p>
 ```
 
-Please read more about Jinja2 capabilities on [Jinja2 homepage](https://jinja.palletsprojects.com).
+You can read more about Jinja2 capabilities on [Jinja2 homepage](https://jinja.palletsprojects.com).
 
 Authors
 -------
@@ -209,9 +212,9 @@ Contact
 -------
 
 If you like or dislike this software, please do not hesitate to tell me about
-this me via email ([marcin@urzenia.net](mailto:marcin@urzenia.net)).
+it via email ([marcin@urzenia.net](mailto:marcin@urzenia.net)).
 
-If you find bug or have an idea to enhance this tool, please use GitHub's
+If you find a bug or have an idea to enhance this tool, please use GitHub's
 [issues](https://github.com/msztolcman/smtpc/issues).
 
 ChangeLog
@@ -221,8 +224,8 @@ ChangeLog
 
 * `send` and `profiles` commands: ask for password if `--password` param
   was used with no argument
-* when adding new profile, you can choose to encrypt your password. In this
-  case you will be asked for encryption key. The same key must be used then to
+* when adding a new profile, you can choose to encrypt your password. In this
+  case you will be asked for encryption key. The same key must be used to
   decrypt password when sending.
 * added many e2e tests
 
