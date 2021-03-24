@@ -1,5 +1,5 @@
 import enum
-from typing import Optional
+from typing import Optional, NoReturn
 
 import toml
 
@@ -24,7 +24,7 @@ class PredefinedProfile:
         connection_timeout: Optional[int] = None,
         identify_as: Optional[str] = None,
         source_address: Optional[str] = None,
-    ):
+    ) -> NoReturn:
         self.name = name
         self.login = login
         self.password = password
@@ -36,7 +36,7 @@ class PredefinedProfile:
         self.identify_as = identify_as
         self.source_address = source_address
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         result = {}
         for key in self.__slots__:
             if key == 'name':
@@ -47,7 +47,7 @@ class PredefinedProfile:
             result[key] = value
         return result
 
-    def __str__(self):
+    def __str__(self) -> str:
         d = self.to_dict()
         d['password'] = '***'
         return '<PredefinedProfile ' + ', '.join([f'{k}={v}' for k, v in d.items()]) + '>'
@@ -80,21 +80,21 @@ class PredefinedProfiles(dict):
 
         return p
 
-    def add(self, new_profile: PredefinedProfile):
+    def add(self, new_profile: PredefinedProfile) -> NoReturn:
         self[new_profile.name] = new_profile
         config.save_toml_file(config.PREDEFINED_PROFILES_FILE, {
             'profiles': {
                 name: profile.to_dict()
                 for name, profile in self.items()
-            }
+            },
         })
 
-    def delete(self, profile_name: str):
+    def delete(self, profile_name: str) -> NoReturn:
         del self[profile_name]
 
         config.save_toml_file(config.PREDEFINED_PROFILES_FILE, {
             'profiles': {
                 name: profile.to_dict()
                 for name, profile in self.items()
-            }
+            },
         })

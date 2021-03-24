@@ -1,5 +1,5 @@
 import enum
-from typing import Optional, List, Union
+from typing import Optional, List, Union, NoReturn
 
 import toml
 
@@ -29,7 +29,7 @@ class PredefinedMessage:
         body_raw: Optional[str] = None,
         body_type: Optional[Union[ContentType, str]] = None,
         headers: Optional[List[str]] = None,
-    ):
+    ) -> NoReturn:
         self.name = name
         self.envelope_from = envelope_from
         self.address_from = address_from
@@ -45,7 +45,7 @@ class PredefinedMessage:
         self.body_type = guess_content_type(body_type, body_plain, body_html)
         self.headers = headers
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         result = {}
         for key in self.__slots__:
             if key == 'name':
@@ -56,7 +56,7 @@ class PredefinedMessage:
             result[key] = value
         return result
 
-    def __str__(self):
+    def __str__(self) -> str:
         d = self.to_dict()
         return '<PredefinedMessage ' + ', '.join([f'{k}={v}' for k, v in d.items()]) + '>'
 
@@ -93,20 +93,20 @@ class PredefinedMessages(dict):
 
         return m
 
-    def add(self, new_message: PredefinedMessage):
+    def add(self, new_message: PredefinedMessage) -> NoReturn:
         self[new_message.name] = new_message
         config.save_toml_file(config.PREDEFINED_MESSAGES_FILE, {
             'messages': {
                 name: message.to_dict()
                 for name, message in self.items()
-            }
+            },
         })
 
-    def delete(self, message_name: str):
+    def delete(self, message_name: str) -> NoReturn:
         del self[message_name]
         config.save_toml_file(config.PREDEFINED_MESSAGES_FILE, {
             'messages': {
                 name: message.to_dict()
                 for name, message in self.items()
-            }
+            },
         })

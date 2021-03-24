@@ -8,7 +8,7 @@ import socket
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Optional, List, Any, Union
+from typing import Optional, List, Any, Union, NoReturn, Tuple
 
 import structlog
 
@@ -30,10 +30,10 @@ logger = structlog.get_logger()
 
 
 class SimpleTemplate:
-    def __init__(self, tpl):
+    def __init__(self, tpl: str) -> NoReturn:
         self.tpl = tpl
 
-    def render(self, **fields):
+    def render(self, **fields) -> str:
         if not fields:
             return self.tpl
 
@@ -73,8 +73,8 @@ class Builder:
         template_fields: Optional[List[str]] = None,
         template_fields_json: Optional[List[str]] = None,
         headers: Optional[List[str]] = None,
-        predefined_message: Optional[PredefinedMessage] = None
-    ):
+        predefined_message: Optional[PredefinedMessage] = None,
+    ) -> NoReturn:
         self.template_fields = template_fields or []
         self.template_fields_json = template_fields_json or []
 
@@ -132,7 +132,7 @@ class Builder:
 
         return message
 
-    def _set_property(self, name: str, initial: Any, low_prio: Optional[PredefinedMessage], defaults: dict):
+    def _set_property(self, name: str, initial: Any, low_prio: Optional[PredefinedMessage], defaults: dict) -> NoReturn:
         value = initial
         if low_prio and initial is None:
             value = getattr(low_prio, name)
@@ -140,7 +140,7 @@ class Builder:
             value = defaults[name]
         setattr(self, name, value)
 
-    def template(self, data: str):
+    def template(self, data: str) -> str:
         if not self.template_fields and not self.template_fields_json:
             return data
 
@@ -158,7 +158,7 @@ class Builder:
         return data
 
     @classmethod
-    def _template_parse_field(cls, field, is_json=False):
+    def _template_parse_field(cls, field: str, is_json: bool = False) -> Tuple[str, str]:
         field, value = field.split('=', 1)
         cls._template_validate_field_name(field)
         if not is_json:
@@ -171,7 +171,7 @@ class Builder:
         return field, value
 
     @classmethod
-    def _template_validate_field_name(cls, name):
+    def _template_validate_field_name(cls, name: str) -> NoReturn:
         m = re.match(r'^[a-zA-Z0-9_]+$', name)
         if not m:
             raise InvalidTemplateFieldNameError('Template field name can contain only ASCII letters,'
@@ -214,7 +214,7 @@ class Sender:
         predefined_profile: Optional[PredefinedProfile],
         predefined_message: Optional[PredefinedMessage],
         dry_run: Optional[bool],
-    ):
+    ) -> NoReturn:
         self.debug_level = debug_level
         self.message_body = message_body
         self.dry_run = dry_run
@@ -257,7 +257,7 @@ class Sender:
             logger.debug('profiles settings', **{k: getattr(self, k) if k != 'password' else '***' for k in profile_fields})
             logger.debug('message settings', **{k: getattr(self, k) for k in message_fields})
 
-    def execute(self):
+    def execute(self) -> NoReturn:
         if self.ssl:
             logger.debug('connecting using ssl', host=self.host, port=self.port,
                 connection_timeout=self.connection_timeout, source_address=self.source_address)
@@ -311,7 +311,7 @@ class Sender:
         finally:
             smtp.quit()
 
-    def prepare_password(self, password, key):
+    def prepare_password(self, password: Optional[str], key: str) -> str:
         if password is None:
             return password
 
@@ -321,7 +321,7 @@ class Sender:
             password = password[4:]
         return password
 
-    def _set_property(self, name: str, initial: Any, low_prio: Optional[PredefinedMessage], defaults: dict):
+    def _set_property(self, name: str, initial: Any, low_prio: Optional[PredefinedMessage], defaults: dict) -> NoReturn:
         value = initial
         if low_prio and initial is None:
             value = getattr(low_prio, name)
@@ -329,6 +329,6 @@ class Sender:
             value = defaults[name]
         setattr(self, name, value)
 
-    def log_exception(self, msg, **kwargs):
+    def log_exception(self, msg: str, **kwargs) -> NoReturn:
         log_method = logger.exception if self.debug_level > 0 else logger.error
         log_method(msg, **kwargs)

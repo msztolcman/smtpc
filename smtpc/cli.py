@@ -6,7 +6,7 @@ import smtplib
 import subprocess  # noqa: S404 # nosec
 import sys
 import tempfile
-from typing import Optional
+from typing import Optional, NoReturn
 
 import structlog
 import toml.decoder
@@ -31,7 +31,7 @@ PREDEFINED_PROFILES: Optional[PredefinedProfiles] = None
 PREDEFINED_MESSAGES: Optional[PredefinedMessages] = None
 
 
-def parse_argv(argv):
+def parse_argv(argv: list) -> argparse.Namespace:
     content_type_choices = [message.ContentType.PLAIN.value, message.ContentType.HTML.value]
     sentinel = object()
 
@@ -202,7 +202,7 @@ def parse_argv(argv):
 
     args = parser.parse_args(argv)
 
-    def setup_connection_args(args):
+    def setup_connection_args(args: list) -> NoReturn:
         if args.tls and args.ssl:
             parser.error("Cannot use --ssl and --tls together")
 
@@ -229,7 +229,7 @@ def parse_argv(argv):
         if (args.login and not args.password) or (not args.login and args.password):
             parser.error("Required both or none: --login, --password")
 
-    def setup_message_args(args):
+    def setup_message_args(args: list) -> NoReturn:
         if not getattr(args, 'message', False) and not args.envelope_from and not args.address_from:
             parser.error('Any sender (--envelope-from or --from) required' + (
                 ' if --message not specified' if not hasattr(args, 'message') else ''
@@ -294,7 +294,7 @@ def parse_argv(argv):
     return args
 
 
-def configure_logger(debug_mode: bool = False):
+def configure_logger(debug_mode: bool = False) -> NoReturn:
     structlog.configure(
         processors=[
             structlog.processors.add_log_level,
@@ -312,19 +312,19 @@ def configure_logger(debug_mode: bool = False):
 
 
 class AbstractCommand:
-    def __init__(self, args: argparse.Namespace):
+    def __init__(self, args: argparse.Namespace) -> NoReturn:
         self.args = args
 
-    def handle(self):
+    def handle(self) -> NoReturn:
         pass
 
-    def log_exception(self, msg, **kwargs):
+    def log_exception(self, msg: str, **kwargs) -> NoReturn:
         log_method = logger.exception if self.args.debug_level > 0 else logger.error
         log_method(msg, **kwargs)
 
 
 class ProfilesCommand(AbstractCommand):
-    def list(self):
+    def list(self) -> NoReturn:
         if not PREDEFINED_PROFILES:
             print('No known profiles')
         else:
@@ -338,16 +338,16 @@ class ProfilesCommand(AbstractCommand):
                 else:
                     print(f"- {name}")
 
-    def edit(self):
+    def edit(self) -> NoReturn:
         editor = get_editor()
         logger.debug(f'editor: {editor}')
-        cmd = [editor, str(config.PREDEFINED_PROFILES_FILE), ]
+        cmd = [editor, str(config.PREDEFINED_PROFILES_FILE)]
         subprocess.run(cmd)  # noqa: S603 # nosec
 
-    def delete(self):
+    def delete(self) -> NoReturn:
         PREDEFINED_PROFILES.delete(self.args.name[0])
 
-    def add(self):
+    def add(self) -> NoReturn:
         self.args.ssl, self.args.tls = determine_ssl_tls_by_port(self.args.port,
             self.args.ssl, self.args.tls, self.args.no_ssl, self.args.no_tls)
         PREDEFINED_PROFILES.add(PredefinedProfile(
@@ -364,7 +364,7 @@ class ProfilesCommand(AbstractCommand):
         ))
         logger.info('Profile saved', profile=self.args.name[0])
 
-    def handle(self):
+    def handle(self) -> NoReturn:
         if self.args.subcommand == 'list':
             self.list()
         elif self.args.subcommand == 'edit':
@@ -376,7 +376,7 @@ class ProfilesCommand(AbstractCommand):
 
 
 class MessagesCommand(AbstractCommand):
-    def list(self):
+    def list(self) -> NoReturn:
         if not PREDEFINED_MESSAGES:
             print('No known messages')
         else:
@@ -389,13 +389,13 @@ class MessagesCommand(AbstractCommand):
                 else:
                     print(f"- {name}")
 
-    def edit(self):
+    def edit(self) -> NoReturn:
         editor = get_editor()
         logger.debug(f'editor: {editor}')
-        cmd = [editor, str(config.PREDEFINED_MESSAGES_FILE), ]
+        cmd = [editor, str(config.PREDEFINED_MESSAGES_FILE)]
         subprocess.run(cmd)  # noqa: S603 # nosec
 
-    def add(self):
+    def add(self) -> NoReturn:
         PREDEFINED_MESSAGES.add(PredefinedMessage(
             name=self.args.name[0],
             envelope_from=self.args.envelope_from,
@@ -415,10 +415,10 @@ class MessagesCommand(AbstractCommand):
         # TODO: shouldn't be logger call
         logger.info('Message saved', message=self.args.name[0])
 
-    def delete(self):
+    def delete(self) -> NoReturn:
         PREDEFINED_MESSAGES.delete(self.args.name[0])
 
-    def handle(self):
+    def handle(self) -> NoReturn:
         if self.args.subcommand == 'list':
             self.list()
         elif self.args.subcommand == 'edit':
@@ -430,14 +430,14 @@ class MessagesCommand(AbstractCommand):
 
 
 class SendCommand(AbstractCommand):
-    def handle(self):
+    def handle(self) -> NoReturn:
         try:
             self._handle()
         except SMTPcError as exc:
             self.log_exception('exception found', message=str(exc))
             exitc(ExitCodes.OTHER)
 
-    def _message_interactive(self, body) -> str:
+    def _message_interactive(self, body: str) -> str:
         with tempfile.NamedTemporaryFile('w+', delete=False) as fh:
             logger.debug('using temporary file for message interactive', path=fh.name)
             if hasattr(body, 'as_string'):
@@ -458,14 +458,14 @@ class SendCommand(AbstractCommand):
 
         return body
 
-    def _get_password_key(self):
+    def _get_password_key(self) -> NoReturn:
         if not encryption:
             raise SMTPcError('No password encryption support found, but password for profile '
                 'is encrypted. Do you have "cryptography" module installed?')
         password_key = getpass.getpass('Key for password decryption: ')
         return password_key
 
-    def _handle(self):
+    def _handle(self) -> NoReturn:
         predefined_message = None if not self.args.message else PREDEFINED_MESSAGES[self.args.message]
         if not predefined_message and self.args.raw_body:
             message_body = self.args.body
@@ -530,7 +530,7 @@ class SendCommand(AbstractCommand):
             logger.error(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
 
 
-def main(argv=None):
+def main(argv: Optional[list] = None) -> NoReturn:
     if argv is None:
         argv = sys.argv[1:]
     config.ensure_config_files()
