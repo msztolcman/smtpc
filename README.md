@@ -47,7 +47,7 @@ is available, it means Linux, macOS/OSX etc.
 
 Simplest way is to use Python's built-in package system:
 
-    python3 -m pip install smtpc[extended]
+    python3 -m pip install 'smtpc[extended]'
 
 It will install `SMTPc` and related packages for best user experience. If you want
 to install simplest version without additions, then start with:
@@ -224,6 +224,7 @@ ChangeLog
 * when adding new profile, you can choose to encrypt your password. In this
   case you will be asked for encryption key. The same key must be used then to
   decrypt password when sending.
+* added many e2e tests
 
 ### v0.7.0
 
