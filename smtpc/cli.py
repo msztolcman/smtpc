@@ -3,7 +3,7 @@ import getpass
 import logging
 import os
 import smtplib
-import subprocess
+import subprocess  # noqa: S404 # nosec
 import sys
 import tempfile
 from typing import Optional
@@ -57,7 +57,7 @@ def parse_argv(argv):
     p_send.add_argument('--login', '-l',
         help='Login for SMTP authentication. Required if --password was given.')
     p_send.add_argument('--password', '-p', nargs='?', default=sentinel,
-        help = 'Password for SMTP authentication. Required if --login was given. If no password was passed, will ask '
+        help='Password for SMTP authentication. Required if --login was given. If no password was passed, will ask '
                'interactively in a safe way.')
     p_send.add_argument('--host', '-s',
         help='SMTP server. Can be also together with port, ie: 127.0.0.1:465.')
@@ -122,8 +122,9 @@ def parse_argv(argv):
     p_profiles = sub.add_parser('profiles', help="Manage connection profiles.")
     p_profiles_sub = p_profiles.add_subparsers(dest='subcommand')
 
-    p_profiles_edit = p_profiles_sub.add_parser('edit', help='Open profiles configuration in default editor.')
-    p_profiles_list = p_profiles_sub.add_parser('list', help='List known connection profiles. Use -D or -DD to see more informations.')
+    p_profiles_edit = p_profiles_sub.add_parser('edit', help='Open profiles configuration in default editor.')  # noqa: F841
+    p_profiles_list = p_profiles_sub.add_parser('list',  # noqa: F841
+        help='List known connection profiles. Use -D or -DD to see more informations.')
     p_profiles_delete = p_profiles_sub.add_parser('delete', help='Remove connection profile.')
     p_profiles_delete.add_argument('name', nargs=1, choices=PREDEFINED_PROFILES.keys(),
         help='Name of connection profile to remove.')
@@ -161,8 +162,9 @@ def parse_argv(argv):
     p_messages = sub.add_parser('messages', help='Manage saved messages.')
     p_messages_sub = p_messages.add_subparsers(dest='subcommand')
 
-    p_messages_edit = p_messages_sub.add_parser('edit', help='Open messages configuration in default editor.')
-    p_messages_list = p_messages_sub.add_parser('list', help='List known messages. Use -D or -DD to see more informations.')
+    p_messages_edit = p_messages_sub.add_parser('edit', help='Open messages configuration in default editor.')  # noqa: F841
+    p_messages_list = p_messages_sub.add_parser('list',  # noqa: F841
+        help='List known messages. Use -D or -DD to see more informations.')
     p_messages_delete = p_messages_sub.add_parser('delete', help='Remove message.')
     p_messages_delete.add_argument('name', nargs=1, choices=PREDEFINED_MESSAGES.keys(),
         help='Name of message to remove.')
@@ -195,7 +197,7 @@ def parse_argv(argv):
         help='Used in SMTP session if --envelope-to is missing. Will not be included in generated message.')
     p_messages_add.add_argument('--reply-to', dest='reply_to', action='append',
         help='How to fill Reply-To header.')
-    p_messages_add.add_argument('--header', '-H', dest='headers', action='append',
+    p_messages_add.add_argument('--header', '-H', metavar='HEADER', dest='headers', action='append',
         help='Additional headers in format: HeaderName=HeaderValue. Can be used multiple times.')
 
     args = parser.parse_args(argv)
@@ -233,7 +235,8 @@ def parse_argv(argv):
                 ' if --message not specified' if not hasattr(args, 'message') else ''
             ))
 
-        if not getattr(args, 'message', False) and not args.envelope_to and not args.address_to and not args.address_cc and not args.address_bcc:
+        if not getattr(args, 'message', False) and not args.envelope_to and not args.address_to and \
+                not args.address_cc and not args.address_bcc:
             parser.error('Any receiver (--envelope-to,--to, --cc, --bcc) required' + (
                 ' if --message not specified' if not hasattr(args, 'message') else ''
             ))
@@ -339,7 +342,7 @@ class ProfilesCommand(AbstractCommand):
         editor = get_editor()
         logger.debug(f'editor: {editor}')
         cmd = [editor, str(config.PREDEFINED_PROFILES_FILE), ]
-        subprocess.run(cmd)
+        subprocess.run(cmd)  # noqa: S603 # nosec
 
     def delete(self):
         PREDEFINED_PROFILES.delete(self.args.name[0])
@@ -390,7 +393,7 @@ class MessagesCommand(AbstractCommand):
         editor = get_editor()
         logger.debug(f'editor: {editor}')
         cmd = [editor, str(config.PREDEFINED_MESSAGES_FILE), ]
-        subprocess.run(cmd)
+        subprocess.run(cmd)  # noqa: S603 # nosec
 
     def add(self):
         PREDEFINED_MESSAGES.add(PredefinedMessage(
@@ -442,7 +445,7 @@ class SendCommand(AbstractCommand):
             fh.write(body)
 
         cmd = [get_editor(), fh.name]
-        subprocess.run(cmd)
+        subprocess.run(cmd)  # noqa: S603 # nosec
 
         with open(fh.name, 'r') as fh:
             body = fh.read()

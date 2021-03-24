@@ -46,6 +46,7 @@ _generate_paths()
 
 
 def ensure_config_files():
+    global CONFIG_DIR, PREDEFINED_PROFILES_FILE, PREDEFINED_MESSAGES_FILE, CONFIG_FILE
     dir_perms = fileperms.Permissions()
     dir_perms.owner_read = True
     dir_perms.owner_write = True

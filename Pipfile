@@ -17,6 +17,11 @@ twine = "*"
 wheel = "*"
 smtpc = {editable = true, path = "."}
 pytest = "*"
+flake8 = "*"
+bandit = "*"
+pep8-naming = "*"
+flake8-bandit = "*"
+safety = "*"
 
 [requires]
 python_version = "3.9"
