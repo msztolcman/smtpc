@@ -112,7 +112,7 @@ def parse_argv(argv):
         help='Used in SMTP session if --envelope-to is missing. Will not be included in generated message.')
     p_send.add_argument('--reply-to', dest='reply_to', action='append',
         help='How to fill Reply-To header.')
-    p_send.add_argument('--header', '-H', dest='headers', action='append',
+    p_send.add_argument('--header', '-H', metavar='HEADER', dest='headers', action='append',
         help='Additional headers in format: HeaderName=HeaderValue. Can be used multiple times.')
     p_send.add_argument('--message-interactive', action='store_true',
         help='Just after creating raw message open editor with raw message body. '
