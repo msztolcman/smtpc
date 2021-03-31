@@ -21,7 +21,7 @@ If you like this tool, just [say thanks](https://saythanks.io/to/marcin%40urzeni
 Current stable version
 ----------------------
 
-0.8.0
+0.8.1
 
 Features
 --------
@@ -219,6 +219,12 @@ If you find a bug or have an idea to enhance this tool, please use GitHub's
 
 ChangeLog
 ---------
+
+### v0.8.1
+
+* fix error related to Content-Type (fixes #2 - thanks for @tuxfamily for reporting)
+* fixed grammar and informations in README (thanks to @slawekp for PR)
+* many minor changes reported by linters
 
 ### v0.8.0
 
