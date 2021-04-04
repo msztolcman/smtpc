@@ -67,6 +67,28 @@ from . import *
                 'body_type': ContentType.ALTERNATIVE.value, 'body_plain': 'some plain body', 'body_html': 'some html body',
             },
         ],
+        [
+            [
+                '--from', 'Some Name <some-name@smtpc.net>', '--to', 'Other Name <other-name@smtpc.net>',
+                '--body-html', 'some html body', '--body-type', ContentType.PLAIN.value,
+            ],
+            {
+                'address_from': 'Some Name <some-name@smtpc.net>', 'address_to': ['Other Name <other-name@smtpc.net>'],
+                'body_type': ContentType.PLAIN.value,
+                'body_html': 'some html body',
+            }
+        ],
+        [
+            [
+                '--from', 'Some Ążśźęćńłó <some-name@smtpc.net>', '--to', 'Other Ążśźęćńłó <other-name@smtpc.net>',
+                '--body-html', 'some html body', '--body-type', ContentType.PLAIN.value,
+            ],
+            {
+                'address_from': 'Some Ążśźęćńłó <some-name@smtpc.net>', 'address_to': ['Other Ążśźęćńłó <other-name@smtpc.net>'],
+                'body_type': ContentType.PLAIN.value,
+                'body_html': 'some html body',
+            }
+        ],
     ],
     ids=[
         'from and to',
@@ -79,6 +101,8 @@ from . import *
         'multiple envelope-to',
         'mixing --envelope-from/to with --from/to',
         'all params given',
+        'addresses with names',
+        'addresses with non-ascii names',
     ],
 )
 def test_add_message_valid(smtpctmppath, capsys, params, expected):
