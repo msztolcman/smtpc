@@ -222,8 +222,8 @@ ChangeLog
 
 ### v0.8.1
 
-* fix error related to Content-Type (fixes #2 - thanks for @tuxfamily for reporting)
-* fixed grammar and informations in README (thanks to @slawekp for PR)
+* fix error related to Content-Type (fixes #2 - thanks for [tuxfamily](https://github.com/tuxfamily) for reporting)
+* fixed grammar and informations in README (thanks to [slawekp](https://github.com/slawekp) for PR)
 * many minor changes reported by linters
 
 ### v0.8.0
