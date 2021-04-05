@@ -13,7 +13,7 @@ def test_list_messages_empty(smtpctmppath, capsys):
 
 def test_list_messages_valid(smtpctmppath, capsys):
     r = callsmtpc(['messages', 'add', 'simple1',
-        '--body-plain', 'some test',
+        '--body', 'some test',
         '--from', 'test@smtpc.net',
         '--to', 'receiver@smtpc.net',
     ], capsys)
@@ -23,7 +23,7 @@ def test_list_messages_valid(smtpctmppath, capsys):
     messages = data['messages']
     assert 'simple1' in messages, 'Expected message simple1 not found'
     assert messages['simple1'] == {
-        'body_type': 'plain', 'body_plain': 'some test',
+        'body': 'some test',
         'address_from': 'test@smtpc.net', 'address_to': ['receiver@smtpc.net'],
         # 'subject': '',
     }, 'Expected message simple1 is invalid'

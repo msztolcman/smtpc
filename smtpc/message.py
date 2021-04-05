@@ -1,5 +1,6 @@
 __all__ = ['Builder', 'Sender']
 
+import email
 import json
 import os
 import re
@@ -16,10 +17,10 @@ from . import __version__
 from . import config
 from .defaults import DEFAULTS_VALUES_MESSAGE, DEFAULTS_VALUES_PROFILE
 from .enums import ContentType, ExitCodes
-from .errors import MissingBodyError, InvalidTemplateFieldNameError, InvalidJsonTemplateError
+from .errors import InvalidTemplateFieldNameError, InvalidJsonTemplateError
 from .predefined_messages import PredefinedMessage
 from .predefined_profiles import PredefinedProfile
-from .utils import exitc, guess_content_type, determine_ssl_tls_by_port
+from .utils import exitc, determine_ssl_tls_by_port
 
 try:
     from . import encryption
@@ -55,7 +56,7 @@ class Builder:
         'subject',
         'envelope_from', 'address_from',
         'envelope_to', 'address_to', 'address_cc', 'reply_to',
-        'body_type', 'body_html', 'body_plain', 'template_fields', 'template_fields_json',
+        'body_type', 'body_html', 'body', 'raw_body', 'template_fields', 'template_fields_json',
         'headers',
     )
 
@@ -67,9 +68,10 @@ class Builder:
         address_to: Optional[List[str]],
         address_cc: Optional[List[str]],
         reply_to: Optional[List[str]],
-        body_type: ContentType,
+        body_type: Optional[ContentType],
         body_html: Optional[str] = None,
-        body_plain: Optional[str] = None,
+        body: Optional[str] = None,
+        raw_body: Optional[bool] = None,
         template_fields: Optional[List[str]] = None,
         template_fields_json: Optional[List[str]] = None,
         headers: Optional[List[str]] = None,
@@ -88,28 +90,31 @@ class Builder:
             'reply_to': reply_to,
             'body_type': body_type,
             'body_html': body_html,
-            'body_plain': body_plain,
+            'body': body,
+            'raw_body': raw_body,
             'headers': headers,
         }
         for name in message_fields:
             self._set_property(name, message_fields[name], predefined_message, DEFAULTS_VALUES_MESSAGE)
-        self.body_type = guess_content_type(self.body_type, self.body_plain, self.body_html)
 
     def execute(self) -> MIMEBase:
-        if self.body_type == ContentType.ALTERNATIVE:
-            message = MIMEMultipart('alternative')
-            if self.body_plain:
-                message.attach(MIMEText(self.template(self.body_plain), 'plain'))
-            if self.body_html:
-                message.attach(MIMEText(self.template(self.body_html), 'html'))
-        elif self.body_type == ContentType.PLAIN:
-            if not self.body_plain:
-                raise MissingBodyError("Body type specified as PLAIN, but plain body is missing")
-            message = MIMEText(self.template(self.body_plain), 'plain')
-        elif self.body_type == ContentType.HTML:
-            if not self.body_html:
-                raise MissingBodyError("Body type specified as HTML, but html body is missing")
-            message = MIMEText(self.template(self.body_html), 'html')
+        if self.raw_body:
+            message = email.message_from_string(self.body)
+        else:
+            if self.body_type:
+                if self.body_type == ContentType.HTML:
+                    body = self.body if self.body is not None else self.body_html
+                    message = MIMEText(self.template(body), 'html')
+                elif self.body_type == ContentType.PLAIN:
+                    message = MIMEText(self.template(self.body), 'plain')
+                else:
+                    message = MIMEMultipart('alternative')
+                    if self.body:
+                        message.attach(MIMEText(self.template(self.body), 'plain'))
+                    if self.body_html:
+                        message.attach(MIMEText(self.template(self.body_html), 'html'))
+            else:
+                message = MIMEText(self.template(self.body or ''), 'plain')
 
         for header in self.headers:
             header_name, header_value = header.split('=', 1)
@@ -128,6 +133,7 @@ class Builder:
         else:
             message['To'] = ', '.join(self.envelope_to)
 
+        del message['User-Agent']
         message['User-Agent'] = f'SMTPc/{__version__} (https://smtpc.net (c) 2021 Marcin Sztolcman)'
 
         return message
@@ -236,9 +242,9 @@ class Sender:
 
         self.password = self.prepare_password(self.password, password_key)
 
-        if any(item is not None for item in [port, ssl, tls, no_ssl, no_tls]):
+        if any(item is not None for item in [port, ssl, tls, no_ssl, no_tls]) or not predefined_profile:
             self.ssl, self.tls = determine_ssl_tls_by_port(port, ssl, tls, no_ssl, no_tls)
-        else:
+        elif predefined_profile:
             self.ssl, self.tls = determine_ssl_tls_by_port(predefined_profile.port, predefined_profile.ssl, predefined_profile.tls)
 
         message_fields = {

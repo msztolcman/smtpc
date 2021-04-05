@@ -25,8 +25,7 @@ def test_delete_message_valid(smtpctmppath, capsys):
     data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
     messages = data['messages']
     assert 'simple1' in messages
-    assert messages['simple1'] == {'address_from': 'from1@smtpc.net', 'address_to': ['receiver1@smtpc.net'],
-        'body_type': ContentType.PLAIN.value}
+    assert messages['simple1'] == {'address_from': 'from1@smtpc.net', 'address_to': ['receiver1@smtpc.net']}
 
     r = callsmtpc(['messages', 'add', 'simple2', '--from', 'from2@smtpc.net', '--to', 'receiver2@smtpc.net'], capsys)
 
@@ -34,16 +33,13 @@ def test_delete_message_valid(smtpctmppath, capsys):
     data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
     messages = data['messages']
     assert 'simple1' in messages
-    assert messages['simple1'] == {'address_from': 'from1@smtpc.net', 'address_to': ['receiver1@smtpc.net'],
-        'body_type': ContentType.PLAIN.value}
+    assert messages['simple1'] == {'address_from': 'from1@smtpc.net', 'address_to': ['receiver1@smtpc.net']}
     assert 'simple2' in messages
-    assert messages['simple2'] == {'address_from': 'from2@smtpc.net', 'address_to': ['receiver2@smtpc.net'],
-        'body_type': ContentType.PLAIN.value}
+    assert messages['simple2'] == {'address_from': 'from2@smtpc.net', 'address_to': ['receiver2@smtpc.net']}
 
     r = callsmtpc(['messages', 'delete', 'simple1'], capsys)
     assert r.code == ExitCodes.OK.value
     data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
     messages = data['messages']
     assert 'simple2' in messages
-    assert messages['simple2'] == {'address_from': 'from2@smtpc.net', 'address_to': ['receiver2@smtpc.net'],
-        'body_type': ContentType.PLAIN.value}
+    assert messages['simple2'] == {'address_from': 'from2@smtpc.net', 'address_to': ['receiver2@smtpc.net']}

@@ -1,3 +1,4 @@
+import copy
 import enum
 from typing import Optional, NoReturn
 
@@ -37,10 +38,11 @@ class PredefinedProfile:
         self.source_address = source_address
 
     def to_dict(self) -> dict:
+        keys = list(copy.copy(self.__slots__))
+        keys.remove('name')
+
         result = {}
-        for key in self.__slots__:
-            if key == 'name':
-                continue
+        for key in keys:
             value = getattr(self, key)
             if isinstance(value, enum.Enum):
                 value = value.value

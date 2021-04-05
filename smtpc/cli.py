@@ -6,6 +6,7 @@ import smtplib
 import subprocess  # noqa: S404 # nosec
 import sys
 import tempfile
+import textwrap
 from typing import Optional, NoReturn
 
 import structlog
@@ -14,7 +15,7 @@ import toml.decoder
 from . import __version__
 from . import message
 from . import config
-from .enums import ExitCodes
+from .enums import ExitCodes, ContentType
 from .errors import SMTPcError
 from .predefined_messages import PredefinedMessages, PredefinedMessage
 from .predefined_profiles import PredefinedProfiles, PredefinedProfile
@@ -32,8 +33,28 @@ PREDEFINED_MESSAGES: Optional[PredefinedMessages] = None
 
 
 def parse_argv(argv: list) -> argparse.Namespace:
-    content_type_choices = [message.ContentType.PLAIN.value, message.ContentType.HTML.value]
+    content_type_choices = [item.lower() for item in ContentType.__members__]
     sentinel = object()
+    body_params_epilog = textwrap.dedent('''
+        Content of email is built using few params:
+            --body (or alias: --body-plain, or data from STDIN)
+            --body-html "some body"
+            --body-type (one of: plain, html, alternative)
+            --raw-body
+
+        Value of --body param is used depending on other params.
+
+        If --raw-body is used, then only value of --body param (or STDIN data) is used (--body-html and
+        --body-type are ignored), and smtpc will not build message on itself, just use the value of --body param.
+        Also --header, --subject or other header/content related params are ignored, and you need to build
+        whole message body on itself.
+
+        --body-html is used in only one two cases:
+        - when --body-type is "html", and no --body/STDIN is used
+        - when --body-type is "alternative"
+
+        In every other case, value of --body/STDIN is used as text/plain part of email.
+    ''')
 
     parser = argparse.ArgumentParser('SMTPc')
     parser.add_argument('--debug', '-D', dest='debug_level', action='count', default=0,
@@ -45,7 +66,8 @@ def parse_argv(argv: list) -> argparse.Namespace:
     sub = parser.add_subparsers(dest='command')
 
     # SEND command
-    p_send = sub.add_parser('send', help="Send message.")
+    p_send = sub.add_parser('send', help="Send message.", epilog=body_params_epilog,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     p_send.add_argument('--dry-run', action='store_true',
         help='Stop processing just before creating SMTP connection with remote server')
     p_send.add_argument('--profile', '-P', choices=PREDEFINED_PROFILES.keys(),
@@ -81,16 +103,18 @@ def parse_argv(argv: list) -> argparse.Namespace:
     # SEND command - message related stuff
     p_send.add_argument('--subject', '-j',
         help='Subject for email.')
-    p_send.add_argument('--body', '-b',
-        help='Body of email. Has less priority then --body-text and --body-html.')
+    p_send.add_argument('--body', '--body-plain', '-b',
+        help='Body of email. See more below about --body, --body-html, --body-plain, --body-type and '
+             '--raw-body params.')
     p_send.add_argument('--body-type', choices=content_type_choices,
-        help='Typehint for email Content-Type.')
-    p_send.add_argument('--body-plain',
-        help='Text part of the message for text/plain version.')
+        help='Typehint for email Content-Type. See more below about --body, --body-html, --body-plain, --body-type '
+             'and --raw-body params.')
     p_send.add_argument('--body-html',
-        help='Text part of the message for text/html version.')
+        help='Text part of the message for text/html version. See more below about --body, --body-html, '
+             '--body-plain, --body-type and --raw-body params.')
     p_send.add_argument('--raw-body', action='store_true',
-        help='Do not try to generate email body with headers, use content from --body as whole message body.')
+        help='Do not try to generate email body with headers, use content from --body as whole message body. '
+             'See more below about --body, --body-html, --body-plain, --body-type and --raw-body params.')
     p_send.add_argument('--template-field', '-I', dest='template_fields', action='append',
         help='If given, should be in format: "FieldName=FieldValue". Then all occurrences of "{FieldName}" '
              'in subject or body will be replaced with "value"')
@@ -168,20 +192,23 @@ def parse_argv(argv: list) -> argparse.Namespace:
     p_messages_delete = p_messages_sub.add_parser('delete', help='Remove message.')
     p_messages_delete.add_argument('name', nargs=1, choices=PREDEFINED_MESSAGES.keys(),
         help='Name of message to remove.')
-    p_messages_add = p_messages_sub.add_parser('add', help='Add new message.')
+    p_messages_add = p_messages_sub.add_parser('add', help='Add new message.', epilog=body_params_epilog,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     p_messages_add.add_argument('name', nargs=1, help='Unique name of message.')
     p_messages_add.add_argument('--subject', '-j',
         help='Subject for email.')
-    p_messages_add.add_argument('--body', '-b',
-        help='Body of email. Has less priority then --body-text and --body-html.')
+    p_messages_add.add_argument('--body', '--body-plain', '-b',
+        help='Body of email. See more below about --body, --body-html, --body-plain, --body-type and '
+             '--raw-body params.')
     p_messages_add.add_argument('--body-type', choices=content_type_choices,
-        help='Typehint for email Content-Type.')
-    p_messages_add.add_argument('--body-plain',
-        help='Text part of the message for text/plain version.')
+        help='Typehint for email Content-Type. See more below about --body, --body-html, --body-plain, --body-type '
+             'and --raw-body params.')
     p_messages_add.add_argument('--body-html',
-        help='Text part of the message for text/html version.')
-    p_messages_add.add_argument('--raw-body', action='store_true',
-        help='Do not try to generate email body with headers, use content from --body as whole message body.')
+        help='Text part of the message for text/html version. See more below about --body, --body-html, '
+             '--body-plain, --body-type and --raw-body params.')
+    p_messages_add.add_argument('--raw-body', action='store_true', default=None,
+        help='Do not try to generate email body with headers, use content from --body as whole message body. '
+             'See more below about --body, --body-html, --body-plain, --body-type and --raw-body params.')
     p_messages_add.add_argument('--envelope-from', '-F',
         help='Sender address for SMTP session. If missing, then address from --from is used.')
     p_messages_add.add_argument('--from', '-f', dest='address_from',
@@ -246,9 +273,12 @@ def parse_argv(argv: list) -> argparse.Namespace:
                 if '=' not in header:
                     parser.error(f"Invalid header syntax: {header}. Required syntax: HeaderName=HeaderValue")
 
-        if args.raw_body and (args.body_plain or args.body_html or args.body_type):
-            parser.error('Cannot use --raw-body together with any of: --body-plain, --body-html, --body-type. '
+        if args.raw_body and (args.body_html or args.body_type):
+            parser.error('Cannot use --raw-body together with any of: --body-html, --body-type. '
                 'Use --raw-body only with --body param')
+
+        if args.body_type:
+            args.body_type = ContentType(args.body_type)
 
     if args.command == 'send':
         setup_connection_args(args)
@@ -406,10 +436,10 @@ class MessagesCommand(AbstractCommand):
             address_bcc=self.args.address_bcc,
             reply_to=self.args.reply_to,
             subject=self.args.subject,
-            body_plain=self.args.body_plain,
+            body=self.args.body,
             body_html=self.args.body_html,
-            body_raw=self.args.body if self.args.raw_body else None,
             body_type=self.args.body_type,
+            raw_body=self.args.raw_body,
             headers=self.args.headers,
         ))
         # TODO: shouldn't be logger call
@@ -481,7 +511,8 @@ class SendCommand(AbstractCommand):
                 reply_to=self.args.reply_to,
                 body_type=self.args.body_type,
                 body_html=self.args.body_html,
-                body_plain=self.args.body_plain,
+                body=self.args.body,
+                raw_body=self.args.raw_body,
                 template_fields=self.args.template_fields,
                 template_fields_json=self.args.template_fields_json,
                 headers=self.args.headers,

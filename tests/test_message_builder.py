@@ -13,7 +13,8 @@ def test_builder_simple():
         reply_to=['smtpc@example.gov'],
         body_type=ContentType.PLAIN,
         body_html=None,
-        body_plain='some body',
+        body='some body',
+        raw_body=False,
         headers=[],
         predefined_message=None,
     )
@@ -27,5 +28,5 @@ def test_builder_simple():
     assert builder.reply_to == ['smtpc@example.gov']
     assert builder.body_type == ContentType.PLAIN
     assert builder.body_html is None
-    assert builder.body_plain == 'some body'
+    assert builder.body == 'some body'
     assert builder.headers == []

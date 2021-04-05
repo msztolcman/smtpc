@@ -10,40 +10,39 @@ from . import *
     [
         [
             ['--from', 'smtpc@smtpc.net', '--to', 'receiver@smtpc.net'],
-            {'address_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net'], 'body_type': ContentType.PLAIN.value}
+            {'address_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net']}
         ],
         [
             ['--envelope-from', 'smtpc@smtpc.net', '--to', 'receiver@smtpc.net'],
-            {'envelope_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net'], 'body_type': ContentType.PLAIN.value}
+            {'envelope_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net']}
         ],
         [
             ['--from', 'smtpc@smtpc.net', '--envelope-to', 'receiver@smtpc.net'],
-            {'address_from': 'smtpc@smtpc.net', 'envelope_to': ['receiver@smtpc.net'], 'body_type': ContentType.PLAIN.value}
+            {'address_from': 'smtpc@smtpc.net', 'envelope_to': ['receiver@smtpc.net']}
         ],
         [
             ['--envelope-from', 'smtpc@smtpc.net', '--envelope-to', 'receiver@smtpc.net'],
-            {'envelope_from': 'smtpc@smtpc.net', 'envelope_to': ['receiver@smtpc.net'], 'body_type': ContentType.PLAIN.value}
+            {'envelope_from': 'smtpc@smtpc.net', 'envelope_to': ['receiver@smtpc.net']}
         ],
         [
             ['--from', 'smtpc@smtpc.net', '--cc', 'receiver@smtpc.net'],
-            {'address_from': 'smtpc@smtpc.net', 'address_cc': ['receiver@smtpc.net'], 'body_type': ContentType.PLAIN.value}
+            {'address_from': 'smtpc@smtpc.net', 'address_cc': ['receiver@smtpc.net']}
         ],
         [
             ['--from', 'smtpc@smtpc.net', '--bcc', 'receiver@smtpc.net'],
-            {'address_from': 'smtpc@smtpc.net', 'address_bcc': ['receiver@smtpc.net'], 'body_type': ContentType.PLAIN.value}
+            {'address_from': 'smtpc@smtpc.net', 'address_bcc': ['receiver@smtpc.net']}
         ],
         [
             ['--from', 'smtpc@smtpc.net', '--to', 'receiver@smtpc.net', '--to', 'receiver2@smtpc.net'],
-            {'address_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net', 'receiver2@smtpc.net'], 'body_type': ContentType.PLAIN.value}
+            {'address_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net', 'receiver2@smtpc.net']}
         ],
         [
             ['--from', 'smtpc@smtpc.net', '--envelope-to', 'receiver@smtpc.net', '--envelope-to', 'receiver2@smtpc.net'],
-            {'address_from': 'smtpc@smtpc.net', 'envelope_to': ['receiver@smtpc.net', 'receiver2@smtpc.net'], 'body_type': ContentType.PLAIN.value}
+            {'address_from': 'smtpc@smtpc.net', 'envelope_to': ['receiver@smtpc.net', 'receiver2@smtpc.net']}
         ],
         [
             ['--envelope-from', 'smtpc@smtpc.net', '--envelope-to', 'receiver@smtpc.net', '--to', 'receiver2@smtpc.net'],
-            {'envelope_from': 'smtpc@smtpc.net', 'envelope_to': ['receiver@smtpc.net'], 'address_to': ['receiver2@smtpc.net'],
-                'body_type': ContentType.PLAIN.value}
+            {'envelope_from': 'smtpc@smtpc.net', 'envelope_to': ['receiver@smtpc.net'], 'address_to': ['receiver2@smtpc.net']}
         ],
         [
             [
@@ -64,29 +63,23 @@ from . import *
                 'subject': 'some subject',
                 'reply_to': ['reply-to@smtpc.net'],
                 'headers': ['SomeHeader1=some header 1', 'SomeHeader2=some header 2'],
-                'body_type': ContentType.ALTERNATIVE.value, 'body_plain': 'some plain body', 'body_html': 'some html body',
+                'body': 'some plain body', 'body_html': 'some html body',
             },
         ],
         [
             [
                 '--from', 'Some Name <some-name@smtpc.net>', '--to', 'Other Name <other-name@smtpc.net>',
-                '--body-html', 'some html body', '--body-type', ContentType.PLAIN.value,
             ],
             {
                 'address_from': 'Some Name <some-name@smtpc.net>', 'address_to': ['Other Name <other-name@smtpc.net>'],
-                'body_type': ContentType.PLAIN.value,
-                'body_html': 'some html body',
             }
         ],
         [
             [
                 '--from', 'Some Ążśźęćńłó <some-name@smtpc.net>', '--to', 'Other Ążśźęćńłó <other-name@smtpc.net>',
-                '--body-html', 'some html body', '--body-type', ContentType.PLAIN.value,
             ],
             {
                 'address_from': 'Some Ążśźęćńłó <some-name@smtpc.net>', 'address_to': ['Other Ążśźęćńłó <other-name@smtpc.net>'],
-                'body_type': ContentType.PLAIN.value,
-                'body_html': 'some html body',
             }
         ],
     ],
@@ -155,16 +148,16 @@ def test_add_message_error(smtpctmppath, capsys, params, expected_in_err):
     [
         [
             ['--from', 'smtpc@smtpc.net', '--to', 'receiver@smtpc.net'],
-            {'address_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net'], 'body_type': ContentType.PLAIN.value}
+            {'address_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net']}
         ],
         [
             [
                 '--from', 'smtpc@smtpc.net', '--to', 'receiver@smtpc.net',
-                '--body-plain', 'some plain body',
+                '--body', 'some body',
             ],
             {
                 'address_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net'],
-                'body_type': ContentType.PLAIN.value, 'body_plain': 'some plain body',
+                'body': 'some body',
             }
         ],
         [
@@ -174,29 +167,50 @@ def test_add_message_error(smtpctmppath, capsys, params, expected_in_err):
             ],
             {
                 'address_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net'],
-                'body_type': ContentType.HTML.value, 'body_html': 'some html body',
+                'body_html': 'some html body',
             }
         ],
         [
             [
                 '--from', 'smtpc@smtpc.net', '--to', 'receiver@smtpc.net',
-                '--body-plain', 'some plain body', '--body-html', 'some html body',
+                '--body', 'some plain body', '--body-html', 'some html body',
             ],
             {
                 'address_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net'],
-                'body_type': ContentType.ALTERNATIVE.value,
-                'body_plain': 'some plain body', 'body_html': 'some html body',
+                'body': 'some plain body', 'body_html': 'some html body',
             }
         ],
         [
             [
                 '--from', 'smtpc@smtpc.net', '--to', 'receiver@smtpc.net',
-                '--body-plain', 'some plain body', '--body-type', ContentType.HTML.value,
+                '--body', 'some body', '--body-type', ContentType.HTML.value,
             ],
             {
                 'address_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net'],
                 'body_type': ContentType.HTML.value,
-                'body_plain': 'some plain body',
+                'body': 'some body',
+            }
+        ],
+        [
+            [
+                '--from', 'smtpc@smtpc.net', '--to', 'receiver@smtpc.net',
+                '--body', 'some body', '--body-type', ContentType.PLAIN.value,
+            ],
+            {
+                'address_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net'],
+                'body_type': ContentType.PLAIN.value,
+                'body': 'some body',
+            }
+        ],
+        [
+            [
+                '--from', 'smtpc@smtpc.net', '--to', 'receiver@smtpc.net',
+                '--body', 'some body', '--body-type', ContentType.ALTERNATIVE.value,
+            ],
+            {
+                'address_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net'],
+                'body_type': ContentType.ALTERNATIVE.value,
+                'body': 'some body',
             }
         ],
         [
@@ -210,27 +224,16 @@ def test_add_message_error(smtpctmppath, capsys, params, expected_in_err):
                 'body_html': 'some html body',
             }
         ],
-        pytest.param(
-            [
-                '--from', 'smtpc@smtpc.net', '--to', 'receiver@smtpc.net',
-                '--body', 'some body',
-            ],
-            {
-                'address_from': 'smtpc@smtpc.net', 'address_to': ['receiver@smtpc.net'],
-                'body_type': ContentType.PLAIN.value,
-                'body_plain': 'some body',
-            },
-            marks=pytest.mark.skip(reason='not finished yet')
-        ),
     ],
     ids=[
-        'no body, just body type',
-        'just plain body',
+        'no body related params',
+        'just body',
         'just html body',
-        'alternative',
-        'plain body with body type set to html',
+        'body and html body',
+        'body with body type set to html',
+        'body with body type set to plain',
+        'body with body type set to alternative',
         'html body with body type set to plain',
-        'just --body',
     ]
 )
 def test_add_message_body_valid(smtpctmppath, capsys, params, expected):
@@ -248,13 +251,6 @@ def test_add_message_body_valid(smtpctmppath, capsys, params, expected):
         [
             [
                 '--from', 'smtpc@smtpc.net', '--to', 'receiver@smtpc.net',
-                '--body-plain', 'some plain body', '--raw-body'
-            ],
-            'Use --raw-body only with --body param'
-        ],
-        [
-            [
-                '--from', 'smtpc@smtpc.net', '--to', 'receiver@smtpc.net',
                 '--body-html', 'some html body', '--raw-body'
             ],
             'Use --raw-body only with --body param'
@@ -268,7 +264,6 @@ def test_add_message_body_valid(smtpctmppath, capsys, params, expected):
         ],
     ],
     ids=[
-        'body plain with --raw-body param',
         'body html with --raw-body param',
         'body type with --raw-body param',
     ]

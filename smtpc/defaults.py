@@ -7,9 +7,9 @@ DEFAULTS_VALUES_MESSAGE = {
     'address_bcc': [],
     'reply_to': [],
     'subject': None,
-    'body_plain': None,
+    'body': None,
     'body_html': None,
-    'body_raw': None,
+    'raw_body': None,
     'body_type': None,
     'headers': [],
 }
