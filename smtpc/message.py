@@ -190,28 +190,25 @@ class Builder:
         if self.raw_body:
             message = email.message_from_string(self.body)
         else:
-            if self.body_type:
-                if self.body_type == ContentType.HTML:
-                    body = self.body if self.body is not None else self.body_html
-                    message = MIMEText(self.template(body), 'html')
-                elif self.body_type == ContentType.PLAIN:
-                    message = MIMEText(self.template(self.body), 'plain')
+            if not self.body_type:
+                if self.body and self.body_html:
+                    self.body_type = ContentType.ALTERNATIVE
+                elif not self.body and self.body_html:
+                    self.body_type = ContentType.HTML
                 else:
-                    message = MIMEMultipart('alternative')
-                    if self.body:
-                        message.attach(MIMEText(self.template(self.body), 'plain'))
-                    if self.body_html:
-                        message.attach(MIMEText(self.template(self.body_html), 'html'))
-            elif self.body_html and self.body:
+                    self.body_type = ContentType.PLAIN
+
+            if self.body_type == ContentType.HTML:
+                body = self.body if self.body is not None else self.body_html
+                message = MIMEText(self.template(body or ''), 'html')
+            elif self.body_type == ContentType.PLAIN:
+                message = MIMEText(self.template(self.body or ''), 'plain')
+            else:
                 message = MIMEMultipart('alternative')
                 if self.body:
                     message.attach(MIMEText(self.template(self.body), 'plain'))
                 if self.body_html:
                     message.attach(MIMEText(self.template(self.body_html), 'html'))
-            elif not self.body and self.body_html:
-                message = MIMEText(self.template(self.body_html), 'html')
-            else:
-                message = MIMEText(self.template(self.body or ''), 'plain')
 
         for header in self.headers:
             header_name, header_value = header.split('=', 1)
