@@ -1,24 +1,6 @@
 import pytest
 
-from smtpc.enums import ContentType
-from smtpc.utils import guess_content_type, determine_ssl_tls_by_port
-
-
-@pytest.mark.parametrize('body_type,body_plain,body_html,expected', [
-    ['unknown', None, None, ContentType.PLAIN],
-    ['plain', None, None, ContentType.PLAIN],
-    ['html', None, None, ContentType.HTML],
-    ['html', 'a', None, ContentType.HTML],
-    ['html', None, 'a', ContentType.HTML],
-    ['plain', None, None, ContentType.PLAIN],
-    ['plain', 'a', None, ContentType.PLAIN],
-    ['plain', None, 'a', ContentType.PLAIN],
-    [None, 'a', None, ContentType.PLAIN],
-    [None, None, 'a', ContentType.HTML],
-    [None, 'a', 'a', ContentType.ALTERNATIVE],
-])
-def test_guess_content_type(body_type, body_plain, body_html, expected):
-    assert guess_content_type(body_type, body_plain, body_html) == expected
+from smtpc.utils import determine_ssl_tls_by_port
 
 
 @pytest.mark.parametrize('port, ssl, tls, no_ssl, no_tls, expected', [

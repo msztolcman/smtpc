@@ -1,4 +1,4 @@
-__all__ = ['guess_content_type', 'determine_ssl_tls_by_port', 'exitc', 'get_editor']
+__all__ = ['determine_ssl_tls_by_port', 'exitc', 'get_editor']
 
 import os
 import sys
@@ -13,20 +13,6 @@ def exitc(err_code: ExitCodes) -> NoReturn:
 
 def get_editor() -> str:
     return os.environ.get('EDITOR') or os.environ.get('VISUAL') or 'vim'
-
-
-def guess_content_type(body_type: Optional[Union[ContentType, str]], body_plain: Optional[str], body_html: Optional[str]) -> ContentType:
-    if body_type in ('plain', 'html'):
-        body_type = ContentType(body_type)
-    elif body_plain and body_html:
-        body_type = ContentType.ALTERNATIVE
-    elif body_plain and not body_html:
-        body_type = ContentType.PLAIN
-    elif not body_plain and body_html:
-        body_type = ContentType.HTML
-    else:
-        body_type = ContentType.PLAIN
-    return body_type
 
 
 def determine_ssl_tls_by_port(
