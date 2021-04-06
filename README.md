@@ -243,7 +243,7 @@ ChangeLog
 
 * changed way of building message body
 * added template fields from message configuration to templates, with prefix `smtpc_`
-* default action for commands `profiles` and `messages` is `list` now (calling without
+* default subcommand for commands `profiles` and `messages` is `list` now (calling without
   subcommand will display list of profiles/messages instead of help)
 * improved handling rejects from SMTP server
 * added short aliases for main commands: `p` - for `profiles`, `s` for `send`, `m` for `messages`
