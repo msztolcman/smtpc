@@ -229,7 +229,7 @@ def parse_argv(argv: list) -> argparse.Namespace:
 
     args = parser.parse_args(argv)
 
-    def setup_connection_args(args: list) -> NoReturn:
+    def setup_connection_args(args: argparse.Namespace) -> NoReturn:
         if args.tls and args.ssl:
             parser.error("Cannot use --ssl and --tls together")
 
@@ -256,7 +256,7 @@ def parse_argv(argv: list) -> argparse.Namespace:
         if (args.login and not args.password) or (not args.login and args.password):
             parser.error("Required both or none: --login, --password")
 
-    def setup_message_args(args: list) -> NoReturn:
+    def setup_message_args(args: argparse.Namespace) -> NoReturn:
         if not getattr(args, 'message', False) and not args.envelope_from and not args.address_from:
             parser.error('Any sender (--envelope-from or --from) required' + (
                 ' if --message not specified' if not hasattr(args, 'message') else ''
