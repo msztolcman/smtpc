@@ -32,57 +32,68 @@ def test_send_simple_valid(smtpctmppath, capsys):
         assert received_message.get_content_type() == 'text/plain'
 
 
-@pytest.mark.parametrize('params',
+@pytest.mark.parametrize('params, expected',
     [
-        ['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net', '--body', 'plain\nmessage'],
-        ['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net', '--body', 'plain\nmessage', '--body-type', ContentType.PLAIN.value],
+        [
+            ['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net', '--body', 'plain\nmessage'],
+            {
+                'sender': 'send@smtpc.net',
+                'to': 'receive@smtpc.net',
+                'receivers': ['receive@smtpc.net'],
+                'body': 'plain\nmessage',
+                'content_type': 'text/plain',
+            },
+        ],
+        [
+            ['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net', '--body', 'plain\nmessage', '--body-type', ContentType.PLAIN.value],
+            {
+                'sender': 'send@smtpc.net',
+                'to': 'receive@smtpc.net',
+                'receivers': ['receive@smtpc.net'],
+                'body': 'plain\nmessage',
+                'content_type': 'text/plain',
+            },
+        ],
+        [
+            ['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net', '--body', 'html\nmessage', '--body-type', ContentType.HTML.value],
+            {
+                'sender': 'send@smtpc.net',
+                'to': 'receive@smtpc.net',
+                'receivers': ['receive@smtpc.net'],
+                'body': 'html\nmessage',
+                'content_type': 'text/html',
+            },
+        ],
+        [
+            ['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net', '--body-html', 'html\nmessage', '--body-type', ContentType.HTML.value],
+            {
+                'sender': 'send@smtpc.net',
+                'to': 'receive@smtpc.net',
+                'receivers': ['receive@smtpc.net'],
+                'body': 'html\nmessage',
+                'content_type': 'text/html',
+            },
+        ],
+        [
+            ['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net', '--body', 'html\nmessage', '--body-html', 'ignored', '--body-type', ContentType.HTML.value],
+            {
+                'sender': 'send@smtpc.net',
+                'to': 'receive@smtpc.net',
+                'receivers': ['receive@smtpc.net'],
+                'body': 'html\nmessage',
+                'content_type': 'text/html',
+            },
+        ],
     ],
     ids=[
         'just --body',
         '--body with --body-type=plain',
-    ],
-)
-def test_send_text_plain_valid(smtpctmppath, capsys, params):
-    with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
-        mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', 'OK, mocked']
-        r = callsmtpc(params, capsys)
-        assert r.code == ExitCodes.OK.value
-
-        mocked_smtp_class.assert_called()
-        mocked_smtp.ehlo.assert_called()
-        mocked_smtp.sendmail.assert_called()
-
-        smtp_sendmail_args = mocked_smtp.sendmail.call_args.args
-        assert smtp_sendmail_args[0] == 'send@smtpc.net'
-        assert smtp_sendmail_args[1] == ['receive@smtpc.net']
-
-        received_message = email.message_from_string(smtp_sendmail_args[2])
-        assert sorted(received_message.keys()) == ['Content-Transfer-Encoding', 'Content-Type', 'From', 'MIME-Version', 'To', 'User-Agent']
-
-        assert f"SMTPc/{smtpc.__version__}" in received_message['User-Agent']
-        assert 'send@smtpc.net' == received_message['From']
-        assert 'receive@smtpc.net' == received_message['To']
-        assert received_message.get_content_type() == 'text/plain'
-
-        message_body = received_message.as_string().split("\n\n", 1)
-        assert len(message_body) == 2, 'No message body found'
-        assert message_body[1] == 'plain\nmessage'
-
-
-@pytest.mark.parametrize('params',
-    [
-        ['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net', '--body', 'html\nmessage', '--body-type', ContentType.HTML.value],
-        ['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net', '--body-html', 'html\nmessage', '--body-type', ContentType.HTML.value],
-        ['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net', '--body', 'html\nmessage', '--body-html', 'ignored', '--body-type', ContentType.HTML.value],
-    ],
-    ids=[
         '--body with --body-type=html',
         '--body-html with --body-type=html',
         '--body and --body-html with --body-type=html',
     ],
 )
-def test_send_text_html_valid(smtpctmppath, capsys, params):
+def test_send_simple_text_valid(smtpctmppath, capsys, params, expected):
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
         mocked_smtp.connect.return_value = ['250', 'OK, mocked']
@@ -94,20 +105,20 @@ def test_send_text_html_valid(smtpctmppath, capsys, params):
         mocked_smtp.sendmail.assert_called()
 
         smtp_sendmail_args = mocked_smtp.sendmail.call_args.args
-        assert smtp_sendmail_args[0] == 'send@smtpc.net'
-        assert smtp_sendmail_args[1] == ['receive@smtpc.net']
+        assert smtp_sendmail_args[0] == expected['sender']
+        assert smtp_sendmail_args[1] == expected['receivers']
 
         received_message = email.message_from_string(smtp_sendmail_args[2])
         assert sorted(received_message.keys()) == ['Content-Transfer-Encoding', 'Content-Type', 'From', 'MIME-Version', 'To', 'User-Agent']
 
         assert f"SMTPc/{smtpc.__version__}" in received_message['User-Agent']
-        assert 'send@smtpc.net' == received_message['From']
-        assert 'receive@smtpc.net' == received_message['To']
-        assert received_message.get_content_type() == 'text/html'
+        assert received_message['From'] == expected['sender']
+        assert received_message['To'] == expected['to']
+        assert received_message.get_content_type() == expected['content_type']
 
         message_body = received_message.as_string().split("\n\n", 1)
         assert len(message_body) == 2, 'No message body found'
-        assert message_body[1] == 'html\nmessage'
+        assert message_body[1] == expected['body']
 
 
 @pytest.mark.parametrize('params, expected_body',
