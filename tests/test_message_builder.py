@@ -10,6 +10,7 @@ def test_builder_simple():
         envelope_to=None,
         address_to=['smtpc@example.net'],
         address_cc=['smtpc@example.org'],
+        address_bcc=['smtpc-bcc@example.org'],
         reply_to=['smtpc@example.gov'],
         body_type=ContentType.PLAIN,
         body_html=None,

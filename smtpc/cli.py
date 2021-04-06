@@ -508,6 +508,7 @@ class SendCommand(AbstractCommand):
                 envelope_to=self.args.envelope_to,
                 address_to=self.args.address_to,
                 address_cc=self.args.address_cc,
+                address_bcc=self.args.address_bcc,
                 reply_to=self.args.reply_to,
                 body_type=self.args.body_type,
                 body_html=self.args.body_html,
