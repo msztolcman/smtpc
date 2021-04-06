@@ -116,30 +116,15 @@ def test_add_message_valid(smtpctmppath, capsys, params, expected):
             ],
             '--body-type: invalid choice: \'invalid\''
         ],
-        [
-            [],
-            'Any sender (--envelope-from or --from) required',
-        ],
-        [
-            ['--from', 'a'],
-            'Any receiver (--envelope-to,--to, --cc, --bcc) required',
-        ],
-        [
-            ['--to', 'a'],
-            'Any sender (--envelope-from or --from) required',
-        ],
     ],
     ids=[
         'invalid --body-type',
-        'missing to/cc/bcc/envelope-to and from/envelope-from',
-        'missing to/envelope-to',
-        'missing from/envelope-from',
     ]
 )
 def test_add_message_error(smtpctmppath, capsys, params, expected_in_err):
     r = callsmtpc(['messages', 'add', 'simple1', *params], capsys)
 
-    assert r.code == ExitCodes.OTHER.value
+    assert r.code == ExitCodes.OTHER.value, r
     assert expected_in_err in r.err
 
 
