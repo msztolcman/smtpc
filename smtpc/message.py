@@ -201,8 +201,31 @@ class Builder:
             'smtpc_reply_to': self.reply_to,
             'smtpc_body_type': self.body_type,
             'smtpc_raw_body': self.raw_body,
-            'smtpc_predefined_profile': predefined_profile,
-            'smtpc_predefined_message': predefined_message,
+            'smtpc_predefined_profile': {
+                'name': predefined_profile.name,
+                'login': predefined_profile.login,
+                'host': predefined_profile.host,
+                'port': predefined_profile.port,
+                'ssl': predefined_profile.ssl,
+                'tls': predefined_profile.tls,
+                'connection_timeout': predefined_profile.connection_timeout,
+                'identify_as': predefined_profile.identify_as,
+                'source_address': predefined_profile.source_address,
+            },
+            'smtpc_predefined_message': {
+                'name': predefined_message.name,
+                'envelope_from': predefined_message.envelope_from,
+                'address_from': predefined_message.address_from,
+                'envelope_to': predefined_message.envelope_to,
+                'address_to': predefined_message.address_to,
+                'address_cc': predefined_message.address_cc,
+                'address_bcc': predefined_message.address_bcc,
+                'reply_to': predefined_message.reply_to,
+                'subject': predefined_message.subject,
+                'raw_body': predefined_message.raw_body,
+                'body_type': predefined_message.body_type,
+                'headers': predefined_message.headers,
+            },
         }
 
     def execute(self) -> MIMEBase:
