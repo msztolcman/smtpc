@@ -167,6 +167,7 @@ class Builder:
         template_fields_json: Optional[List[str]] = None,
         headers: Optional[List[str]] = None,
         predefined_message: Optional[PredefinedMessage] = None,
+        predefined_profile: Optional[PredefinedProfile] = None,
     ) -> NoReturn:
         self.template_fields = template_fields or []
         self.template_fields_json = template_fields_json or []
@@ -200,6 +201,8 @@ class Builder:
             'smtpc_reply_to': self.reply_to,
             'smtpc_body_type': self.body_type,
             'smtpc_raw_body': self.raw_body,
+            'smtpc_predefined_profile': predefined_profile,
+            'smtpc_predefined_message': predefined_message,
         }
 
     def execute(self) -> MIMEBase:

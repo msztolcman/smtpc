@@ -515,12 +515,17 @@ class SendCommand(AbstractCommand):
         return password_key
 
     def _handle(self) -> NoReturn:
+        profile = None
+        if self.args.profile:
+            profile = PREDEFINED_PROFILES[self.args.profile]
+
         predefined_message = None if not self.args.message else PREDEFINED_MESSAGES[self.args.message]
         if not predefined_message and self.args.raw_body:
             message_body = self.args.body
         else:
             message_builder = message.Builder(
                 predefined_message=predefined_message,
+                predefined_profile=profile,
                 subject=self.args.subject,
                 envelope_from=self.args.envelope_from,
                 address_from=self.args.address_from,
@@ -543,11 +548,8 @@ class SendCommand(AbstractCommand):
             message_body = self._message_interactive(message_body)
 
         password_key = None
-        profile = None
-        if self.args.profile:
-            profile = PREDEFINED_PROFILES[self.args.profile]
-            if self.args.password is None and profile.password and profile.password.startswith('enc:'):
-                password_key = self._get_password_key()
+        if profile and self.args.password is None and profile.password and profile.password.startswith('enc:'):
+            password_key = self._get_password_key()
 
         try:
             send_message = message.Sender(

@@ -18,6 +18,7 @@ def test_builder_simple():
         raw_body=False,
         headers=[],
         predefined_message=None,
+        predefined_profile=None,
     )
 
     assert builder.subject == 'some subject'

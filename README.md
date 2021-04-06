@@ -219,6 +219,8 @@ Available predefined fields:
 - `smtpc_reply_to` - analogous to `--reply-to`
 - `smtpc_body_type` - analogous to `--body-type`, but it's the final content-type of message
 - `smtpc_raw_body` - True if `--raw-body` was used, and False if not
+- `smtpc_predefined_profile` - all informations from profile, if specified (see: `--profile`)
+- `smtpc_predefined_message` - all informations from message, if specified (see: `--message`)
 
 You can read more about Jinja2 capabilities on [Jinja2 homepage](https://jinja.palletsprojects.com).
 
