@@ -2,6 +2,7 @@ import argparse
 import getpass
 import logging
 import os
+import select
 import smtplib
 import subprocess  # noqa: S404 # nosec
 import sys
@@ -205,7 +206,7 @@ def parse_argv(argv: list) -> argparse.Namespace:
         help='Subject for email.')
     p_messages_add.add_argument('--body', '--body-plain', '-b',
         help='Body of email. See more below about --body, --body-html, --body-plain, --body-type and '
-             '--raw-body params.')
+             '--raw-body params. Use "-" if you want to read from STDIN.')
     p_messages_add.add_argument('--body-type', choices=content_type_choices,
         help='Typehint for email Content-Type. See more below about --body, --body-html, --body-plain, --body-type '
              'and --raw-body params.')
@@ -286,10 +287,20 @@ def parse_argv(argv: list) -> argparse.Namespace:
         if args.body_type:
             args.body_type = ContentType(args.body_type)
 
+    def read_stdin_body(args: argparse.Namespace) -> NoReturn:
+        if args.body and args.body != '-':
+            return
+
+        if select.select([sys.stdin], [], [], 0.0)[0]:
+            args.body = sys.stdin.read()
+        elif args.body == '-':
+            parser.error("No data in STDIN stream")
+
     if args.command in ('send', 's'):
         args.command = 'send'
         setup_connection_args(args)
         setup_message_args(args)
+        read_stdin_body(args)
 
     elif args.command in ('profiles', 'p'):
         args.command = 'profiles'
@@ -308,6 +319,7 @@ def parse_argv(argv: list) -> argparse.Namespace:
         args.command = 'messages'
         if args.subcommand == 'add':
             setup_message_args(args)
+            read_stdin_body(args)
         elif not args.subcommand:
             args.subcommand = 'list'
 
