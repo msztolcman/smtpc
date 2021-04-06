@@ -152,7 +152,7 @@ For example, if you specify the subject as:
 
 and when sending you provide a value:
 
-```angular2html
+```
 --template-field "date=$(date +"%Y-%m-%dT%H:%M:%S%Z")"
 ```
 
@@ -203,6 +203,23 @@ and the body (slightly reformatted here):
 <p>That&#39;s all folks!</p>
 ```
 
+There are also available fields from message configuration (like `subject` or `address_to`).
+These fields (full list below) are the final values (calculated from `CLI` params to `SMTPc` and
+predefined message configuration). All of them are prefixed with `smtpc_`. This allows for
+much better customization of emails.
+
+Available predefined fields:
+- `smtpc_subject` - analogous to `--subject`
+- `smtpc_envelope_from` - analogous to `--envelope-from`
+- `smtpc_from` - analogous to `--from`
+- `smtpc_envelope_to` - analogous to `--envelope-to`
+- `smtpc_to` - analogous to `--to`
+- `smtpc_cc` - analogous to `--cc`
+- `smtpc_bcc` - analogous to `--bcc`
+- `smtpc_reply_to` - analogous to `--reply-to`
+- `smtpc_body_type` - analogous to `--body-type`, but it's the final content-type of message
+- `smtpc_raw_body` - True if `--raw-body` was used, and False if not
+
 You can read more about Jinja2 capabilities on [Jinja2 homepage](https://jinja.palletsprojects.com).
 
 Authors
@@ -225,6 +242,7 @@ ChangeLog
 ### v.0.9.0
 
 * changed way of building message body
+* added template fields from message configuration to templates, with prefix `smtpc_`
 * improved handling rejects from SMTP server
 * huge improvements for debug messages
 * allow for missing from/envelope_from, to/cc/bcc/envelope_to when
