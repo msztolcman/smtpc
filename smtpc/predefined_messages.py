@@ -103,7 +103,7 @@ class PredefinedMessages(dict):
                 body=body,
                 body_html=message.get('body_html'),
                 raw_body=raw_body,
-                body_type=message.get('body_type'),
+                body_type=ContentType(message['body_type']) if 'body_type' in message else None,
                 headers=message.get('headers'),
             )
 
