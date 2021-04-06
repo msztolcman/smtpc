@@ -7,12 +7,18 @@ import os
 import re
 import smtplib
 import socket
+import sys
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Optional, List, Any, Union, NoReturn, Tuple
 
 import structlog
+
+try:
+    import colorama
+except ImportError:
+    colorama = False
 
 from . import __version__
 from . import config
@@ -50,6 +56,88 @@ try:
     from jinja2 import Template
 except ImportError:
     Template = SimpleTemplate
+
+
+class SmtpDebugPrinter:
+    def __init__(self):
+        if colorama:
+            self.fore_magenta = colorama.Fore.MAGENTA
+            self.fore_cyan = colorama.Fore.CYAN
+            self.fore_yellow = colorama.Fore.YELLOW
+            self.fore_red = colorama.Fore.RED
+            self.fore_reset = colorama.Fore.RESET
+
+            colorama.init()
+        else:
+            self.fore_magenta = ''
+            self.fore_cyan = ''
+            self.fore_yellow = ''
+            self.fore_red = ''
+            self.fore_reset = ''
+
+    def print(self, args, file=sys.stderr):
+        if len(args) == 1 and args[0].startswith(('send:', 'reply:', 'data:')):
+            return
+        if args[0].startswith('connect:'):
+            return
+
+        args = list(args)
+        if args[0] == 'reply:':
+            args = self.parse_server(args)
+        elif args[0] == 'send:':
+            args = self.parse_client(args)
+        elif args[0] == 'data:':
+            args = self.parse_data(args)
+        elif args[0] == 'connect:':
+            args = self.parse_connect(args)
+
+        if not args:
+            return
+
+        for idx, line in enumerate(args):
+            if isinstance(line, (str, bytes)):
+                args[idx] = line.replace("\\r\\n", "\\r\\n\n").rstrip("\n")
+
+        print(*args, file=file)
+
+    def _smtp_response_code_replacer(self, item):
+        code = item.group(1)
+        sep = item.group(2)
+        color = self.fore_red if code.startswith('5') else self.fore_yellow
+        ret = f"{color}{code}{sep}{self.fore_reset}"
+        return ret
+
+    def parse_server(self, args):
+        args[0] = f'{self.fore_magenta}server: {self.fore_reset}'
+
+        for idx, line in enumerate(args[1:]):
+            if isinstance(line, (str, bytes)) and line.startswith("b'"):
+                line = line[2:-1]
+
+            line = re.sub(r'^(\d+)(\s+|-)', self._smtp_response_code_replacer, line)
+            line = f"  {line}"
+            args[idx + 1] = line
+
+        return args
+
+    def parse_client(self, args):
+        args[0] = f'{self.fore_cyan}client: {self.fore_reset}'
+
+        for idx, line in enumerate(args[1:]):
+            if isinstance(line, (str, bytes)) and line.startswith("'") and line.endswith("'"):
+                line = line[1:-1]
+            elif isinstance(line, (str, bytes)) and line.startswith("b'"):
+                line = line[2:-1]
+
+            args[idx + 1] = line
+
+        return args
+
+    def parse_data(self, args):
+        return []
+
+    def parse_connect(self, args):
+        return []
 
 
 class Builder:
@@ -281,8 +369,14 @@ class Sender:
         if self.dry_run:
             return
 
+        smtp.set_debuglevel(1)
         if self.debug_level > 1:
-            smtp.set_debuglevel(self.debug_level - 1)
+            smtp_debug_printer = SmtpDebugPrinter()
+
+        def _print_debug(*args):
+            if self.debug_level > 1:
+                smtp_debug_printer.print(args)
+        smtp._print_debug = _print_debug
 
         try:
             # HACK: connect doesn't set smtp._host, then ssl/tls will not work :/
@@ -313,11 +407,13 @@ class Sender:
         body = getattr(self.message_body, 'as_string', lambda: self.message_body)
         try:
             rejects = smtp.sendmail(envelope_from, envelope_to, body())
+            logger.debug('message sent', recipients=envelope_from, rejects=rejects or None)
         except smtplib.SMTPSenderRefused as exc:
             self.log_exception(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
             exitc(ExitCodes.OTHER)
         finally:
             smtp.quit()
+            logger.debug('disconnected from remote server')
 
         senders = list(copy.copy(envelope_to))
         if rejects:

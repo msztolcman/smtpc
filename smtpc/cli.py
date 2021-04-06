@@ -560,7 +560,7 @@ class SendCommand(AbstractCommand):
         except (smtplib.SMTPSenderRefused, smtplib.SMTPAuthenticationError) as exc:
             logger.error(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
 
-        print('Messages sent to:', ', '.join(receivers))
+        print('Message sent to:', ', '.join(receivers))
 
 
 def main(argv: Optional[list] = None) -> NoReturn:
