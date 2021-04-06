@@ -1,5 +1,6 @@
 __all__ = ['Builder', 'Sender']
 
+import copy
 import email
 import json
 import os
@@ -263,7 +264,7 @@ class Sender:
             logger.debug('profiles settings', **{k: getattr(self, k) if k != 'password' else '***' for k in profile_fields})
             logger.debug('message settings', **{k: getattr(self, k) for k in message_fields})
 
-    def execute(self) -> NoReturn:
+    def execute(self) -> List[str]:
         if self.ssl:
             logger.debug('connecting using ssl', host=self.host, port=self.port,
                 connection_timeout=self.connection_timeout, source_address=self.source_address)
@@ -309,13 +310,22 @@ class Sender:
         envelope_from = self.envelope_from or self.address_from
         envelope_to = self.envelope_to or (self.address_to + self.address_cc + self.address_bcc)
 
+        body = getattr(self.message_body, 'as_string', lambda: self.message_body)
         try:
-            smtp.sendmail(envelope_from, envelope_to, getattr(self.message_body, 'as_string', lambda: self.message_body)())
+            rejects = smtp.sendmail(envelope_from, envelope_to, body())
         except smtplib.SMTPSenderRefused as exc:
             self.log_exception(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
             exitc(ExitCodes.OTHER)
         finally:
             smtp.quit()
+
+        senders = list(copy.copy(envelope_to))
+        if rejects:
+            for address, info in rejects.items():
+                logger.error(f"server doesn't accept message for {address}", smtp_code=info[0], smtp_message=info[1])
+                senders.remove(address)
+
+        return senders
 
     def prepare_password(self, password: Optional[str], key: str) -> str:
         if password is None:

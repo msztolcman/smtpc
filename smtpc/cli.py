@@ -556,9 +556,11 @@ class SendCommand(AbstractCommand):
                 no_tls=self.args.no_tls,
                 dry_run=self.args.dry_run,
             )
-            send_message.execute()
+            receivers = send_message.execute()
         except (smtplib.SMTPSenderRefused, smtplib.SMTPAuthenticationError) as exc:
             logger.error(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
+
+        print('Messages sent to:', ', '.join(receivers))
 
 
 def main(argv: Optional[list] = None) -> NoReturn:
