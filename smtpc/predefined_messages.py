@@ -120,7 +120,7 @@ class PredefinedMessages(dict):
         del self[message_name]
         self._save()
 
-    def _save(self):
+    def _save(self) -> NoReturn:
         config.save_toml_file(config.PREDEFINED_MESSAGES_FILE, {
             'messages': {
                 name: message.to_dict()

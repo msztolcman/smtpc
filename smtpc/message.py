@@ -2,6 +2,7 @@ __all__ = ['Builder', 'Sender']
 
 import copy
 import email
+import io
 import json
 import os
 import re
@@ -59,7 +60,7 @@ except ImportError:
 
 
 class SmtpDebugPrinter:
-    def __init__(self):
+    def __init__(self) -> NoReturn:
         if colorama:
             self.fore_magenta = colorama.Fore.MAGENTA
             self.fore_cyan = colorama.Fore.CYAN
@@ -75,7 +76,7 @@ class SmtpDebugPrinter:
             self.fore_red = ''
             self.fore_reset = ''
 
-    def print(self, args, file=sys.stderr):
+    def print(self, args: List[Any], file: io.FileIO = sys.stderr) -> NoReturn:
         if len(args) == 1 and args[0].startswith(('send:', 'reply:', 'data:')):
             return
         if args[0].startswith('connect:'):
@@ -100,14 +101,14 @@ class SmtpDebugPrinter:
 
         print(*args, file=file)
 
-    def _smtp_response_code_replacer(self, item):
+    def _smtp_response_code_replacer(self, item: re.Match) -> str:
         code = item.group(1)
         sep = item.group(2)
         color = self.fore_red if code.startswith('5') else self.fore_yellow
         ret = f"{color}{code}{sep}{self.fore_reset}"
         return ret
 
-    def parse_server(self, args):
+    def parse_server(self, args: List[Any]) -> List[Any]:
         args[0] = f'{self.fore_magenta}server: {self.fore_reset}'
 
         for idx, line in enumerate(args[1:]):
@@ -120,7 +121,7 @@ class SmtpDebugPrinter:
 
         return args
 
-    def parse_client(self, args):
+    def parse_client(self, args: List[Any]) -> List[Any]:
         args[0] = f'{self.fore_cyan}client: {self.fore_reset}'
 
         for idx, line in enumerate(args[1:]):
@@ -133,10 +134,10 @@ class SmtpDebugPrinter:
 
         return args
 
-    def parse_data(self, args):
+    def parse_data(self, args: List[Any]) -> List[Any]:
         return []
 
-    def parse_connect(self, args):
+    def parse_connect(self, args: List[Any]) -> List[Any]:
         return []
 
 
@@ -420,7 +421,7 @@ class Sender:
         if self.debug_level > 1:
             smtp_debug_printer = SmtpDebugPrinter()
 
-        def _print_debug(*args):
+        def _print_debug(*args) -> NoReturn:
             if self.debug_level > 1:
                 smtp_debug_printer.print(args)
         smtp._print_debug = _print_debug

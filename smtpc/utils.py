@@ -2,9 +2,9 @@ __all__ = ['determine_ssl_tls_by_port', 'exitc', 'get_editor']
 
 import os
 import sys
-from typing import Optional, Union, NoReturn, Tuple
+from typing import Optional, NoReturn, Tuple
 
-from .enums import ContentType, ExitCodes
+from .enums import ExitCodes
 
 
 def exitc(err_code: ExitCodes) -> NoReturn:
