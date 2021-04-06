@@ -13,8 +13,8 @@ import structlog
 import toml.decoder
 
 from . import __version__
-from . import message
 from . import config
+from . import message
 from .enums import ExitCodes, ContentType
 from .errors import SMTPcError
 from .predefined_messages import PredefinedMessages, PredefinedMessage

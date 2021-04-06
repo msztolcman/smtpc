@@ -1,12 +1,11 @@
 import copy
 import enum
-from typing import Optional, List, Union, NoReturn
+from typing import Optional, List, NoReturn
 
 import toml
 
 from . import config
 from .enums import ContentType
-from .utils import guess_content_type
 
 
 class PredefinedMessage:

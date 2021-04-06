@@ -2,12 +2,10 @@ import os
 from unittest import mock
 
 import pytest
-import toml
 
 from smtpc import config
 from smtpc import encryption
 from smtpc.enums import ExitCodes
-
 from . import *
 
 

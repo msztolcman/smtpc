@@ -2,7 +2,6 @@ import pytest
 
 from smtpc import config
 from smtpc.enums import ExitCodes, ContentType
-
 from . import *
 
 
