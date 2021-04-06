@@ -294,15 +294,13 @@ def parse_argv(argv: list) -> argparse.Namespace:
                 args.password = encryption.encrypt(args.password, os.environ.get(config.ENV_SMTPC_SALT, ''), password_key)
 
         elif not args.subcommand:
-            p_profiles.print_help()
-            exitc(ExitCodes.OK)
+            args.subcommand = 'list'
 
     elif args.command == 'messages':
         if args.subcommand == 'add':
             setup_message_args(args)
         elif not args.subcommand:
-            p_messages.print_help()
-            exitc(ExitCodes.OK)
+            args.subcommand = 'list'
 
     else:
         parser.print_help()

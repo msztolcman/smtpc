@@ -243,6 +243,8 @@ ChangeLog
 
 * changed way of building message body
 * added template fields from message configuration to templates, with prefix `smtpc_`
+* default action for commands `profiles` and `messages` is `list` now (calling without
+  subcommand will display list of profiles/messages instead of help)
 * improved handling rejects from SMTP server
 * huge improvements for debug messages
 * allow for missing from/envelope_from, to/cc/bcc/envelope_to when
