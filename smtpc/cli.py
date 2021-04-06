@@ -66,7 +66,7 @@ def parse_argv(argv: list) -> argparse.Namespace:
     sub = parser.add_subparsers(dest='command')
 
     # SEND command
-    p_send = sub.add_parser('send', help="Send message.", epilog=body_params_epilog,
+    p_send = sub.add_parser('send', aliases=['s'], help="Send message.", epilog=body_params_epilog,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     p_send.add_argument('--dry-run', action='store_true',
         help='Stop processing just before creating SMTP connection with remote server')
@@ -143,7 +143,7 @@ def parse_argv(argv: list) -> argparse.Namespace:
              'Allow to edit and send modified version.')
 
     # PROFILES command
-    p_profiles = sub.add_parser('profiles', help="Manage connection profiles.")
+    p_profiles = sub.add_parser('profiles', aliases=['p'], help="Manage connection profiles.")
     p_profiles_sub = p_profiles.add_subparsers(dest='subcommand')
 
     p_profiles_edit = p_profiles_sub.add_parser('edit', help='Open profiles configuration in default editor.')  # noqa: F841
@@ -183,7 +183,7 @@ def parse_argv(argv: list) -> argparse.Namespace:
         help='Source IP address to use when connecting.')
 
     # MESSAGES command
-    p_messages = sub.add_parser('messages', help='Manage saved messages.')
+    p_messages = sub.add_parser('messages', aliases=['m'], help='Manage saved messages.')
     p_messages_sub = p_messages.add_subparsers(dest='subcommand')
 
     p_messages_edit = p_messages_sub.add_parser('edit', help='Open messages configuration in default editor.')  # noqa: F841
@@ -280,11 +280,13 @@ def parse_argv(argv: list) -> argparse.Namespace:
         if args.body_type:
             args.body_type = ContentType(args.body_type)
 
-    if args.command == 'send':
+    if args.command in ('send', 's'):
+        args.command = 'send'
         setup_connection_args(args)
         setup_message_args(args)
 
-    elif args.command == 'profiles':
+    elif args.command in ('profiles', 'p'):
+        args.command = 'profiles'
         if args.subcommand == 'add':
             setup_connection_args(args)
             if args.encrypt_password:
@@ -296,7 +298,8 @@ def parse_argv(argv: list) -> argparse.Namespace:
         elif not args.subcommand:
             args.subcommand = 'list'
 
-    elif args.command == 'messages':
+    elif args.command in ('messages', 'm'):
+        args.command = 'messages'
         if args.subcommand == 'add':
             setup_message_args(args)
         elif not args.subcommand:
