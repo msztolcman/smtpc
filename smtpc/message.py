@@ -202,6 +202,14 @@ class Builder:
                         message.attach(MIMEText(self.template(self.body), 'plain'))
                     if self.body_html:
                         message.attach(MIMEText(self.template(self.body_html), 'html'))
+            elif self.body_html and self.body:
+                message = MIMEMultipart('alternative')
+                if self.body:
+                    message.attach(MIMEText(self.template(self.body), 'plain'))
+                if self.body_html:
+                    message.attach(MIMEText(self.template(self.body_html), 'html'))
+            elif not self.body and self.body_html:
+                message = MIMEText(self.template(self.body_html), 'html')
             else:
                 message = MIMEText(self.template(self.body or ''), 'plain')
 

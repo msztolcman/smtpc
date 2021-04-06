@@ -75,6 +75,16 @@ def test_send_simple_valid(smtpctmppath, capsys):
             },
         ],
         [
+            ['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net', '--body-html', 'html\nmessage'],
+            {
+                'sender': 'send@smtpc.net',
+                'to': 'receive@smtpc.net',
+                'receivers': ['receive@smtpc.net'],
+                'body': 'html\nmessage',
+                'content_type': 'text/html',
+            },
+        ],
+        [
             ['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net', '--body', 'html\nmessage', '--body-html', 'ignored', '--body-type', ContentType.HTML.value],
             {
                 'sender': 'send@smtpc.net',
@@ -90,6 +100,7 @@ def test_send_simple_valid(smtpctmppath, capsys):
         '--body with --body-type=plain',
         '--body with --body-type=html',
         '--body-html with --body-type=html',
+        '--body-html without',
         '--body and --body-html with --body-type=html',
     ],
 )
@@ -169,11 +180,32 @@ message
 --{SMTPC_BOUNDARY}--
 '''
         ],
+        [
+            ['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net', '--body', 'some\nbody', '--body-html', 'html\nmessage'],
+            '''\
+--{SMTPC_BOUNDARY}
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+
+some
+body
+--{SMTPC_BOUNDARY}
+Content-Type: text/html; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+
+html
+message
+--{SMTPC_BOUNDARY}--
+'''
+        ],
     ],
     ids=[
         'just --body',
         'just --body-html',
-        'both --body and --body-html',
+        'both --body and --body-html, with --body-type=alternative',
+        'both --body and --body-html, without --body-type',
     ]
 )
 def test_send_alternative_valid(smtpctmppath, capsys, params, expected_body):
