@@ -32,6 +32,8 @@ Features
 * Store passwords in an encrypted form (optionally)
 * Ability to edit raw message body just before sending
 * Templating system customizing messages (with Jinja2)
+* Clean and readable SMTP session logs (if enabled). Especially with
+  [colorama](https://pypi.org/project/colorama/) module!
 * SSL and TLS connections, of course
 * You can easily spoof your own messages, by specifying other sender/recipient in
   message headers, and other one for SMTP session
@@ -85,9 +87,9 @@ smtpc profiles list
 Now, add a few messages for future use:
 
 ```bash
-smtpc messages add plain --subject 'Some plain email' --body-plain 'Some plain message body' --from plain@smtpc.net --to receiver@smtpc.net
-smtpc messages add html --subject 'Some html email' --body-html 'Some <b>HTML</b> message body' --from html@smtpc.net --to receiver@smtpc.net
-smtpc messages add alternative --subject 'Some alternative email' --body-plain 'Some plain message body' --body-html 'Some <b>HTML</b> message body' --from alternative@smtpc.net --to receiver@smtpc.net
+smtpc messages add plain --subject 'Some plain email' --body 'Some plain message body' --from plain@smtpc.net --to receiver@smtpc.net
+smtpc messages add html --subject 'Some html email' --body 'Some <b>HTML</b> message body' --body-type=html --from html@smtpc.net --to receiver@smtpc.net
+smtpc messages add alternative --subject 'Some alternative email' --body 'Some plain message body' --body-html 'Some <b>HTML</b> message body' --from alternative@smtpc.net --to receiver@smtpc.net
 ```
 
 You can verify that your messages are stored:
@@ -115,7 +117,7 @@ But it's not where the fun is :)
 You can also use your predefined messages as templates:
 
 ```bash
-smtpc messages add template-test --subject 'Some templated email: {{ date }}' --body-plain 'Some templated email body: {{ uuid }}' --from templated@smtpc.net --to receiver@smtpc.net
+smtpc messages add template-test --subject 'Some templated email: {{ date }}' --body 'Some templated email body: {{ uuid }}' --from templated@smtpc.net --to receiver@smtpc.net
 smtpc send --profile sendria --message template-test --template-field "date=$(date)" --template-field "uuid=$(uuidgen)"
 ```
 
@@ -219,6 +221,16 @@ If you find a bug or have an idea to enhance this tool, please use GitHub's
 
 ChangeLog
 ---------
+
+### v.0.9.0
+
+* changed way of building message body
+* improved handling rejects from SMTP server
+* huge improvements for debug messages
+* allow for missing from/envelope_from, to/cc/bcc/envelope_to when
+  adding new predefined message
+* new e2e tests: sending messages
+
 
 ### v0.8.1
 
