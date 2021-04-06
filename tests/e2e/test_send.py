@@ -574,3 +574,20 @@ def test_send_with_message_valid(smtpctmppath, capsys, smtpc_params, message_par
         message_body = received_message.as_string().split("\n\n", 1)
         assert len(message_body) == 2, 'No message body found'
         assert message_body[1] == expected['body']
+
+
+def test_send_interactive_password(smtpctmppath, capsys):
+    with \
+        mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class,\
+        mock.patch('getpass.getpass', lambda: 'pass')\
+    :
+        mocked_smtp = mocked_smtp_class.return_value
+        mocked_smtp.connect.return_value = ['250', 'OK, mocked']
+        r = callsmtpc(['send', '--from', 'sender@smtpc.net', '--to', 'receiver@smtpc.net', '--login', 'asd', '--password'], capsys)
+        assert r.code == ExitCodes.OK.value, r
+
+        mocked_smtp_class.assert_called()
+
+        mocked_smtp.login.assert_called()
+        smtp_login_args = mocked_smtp.login.call_args.args
+        assert smtp_login_args == ('asd', 'pass')
