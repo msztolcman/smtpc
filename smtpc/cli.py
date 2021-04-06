@@ -257,12 +257,12 @@ def parse_argv(argv: list) -> argparse.Namespace:
             parser.error("Required both or none: --login, --password")
 
     def setup_message_args(args: argparse.Namespace) -> NoReturn:
-        if not getattr(args, 'message', False) and not args.envelope_from and not args.address_from:
+        if args.command == 'send' and not getattr(args, 'message', False) and not args.envelope_from and not args.address_from:
             parser.error('Any sender (--envelope-from or --from) required' + (
                 ' if --message not specified' if not hasattr(args, 'message') else ''
             ))
 
-        if not getattr(args, 'message', False) and not args.envelope_to and not args.address_to and \
+        if args.command == 'send' and not getattr(args, 'message', False) and not args.envelope_to and not args.address_to and \
                 not args.address_cc and not args.address_bcc:
             parser.error('Any receiver (--envelope-to,--to, --cc, --bcc) required' + (
                 ' if --message not specified' if not hasattr(args, 'message') else ''
