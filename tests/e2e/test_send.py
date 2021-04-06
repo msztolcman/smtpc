@@ -417,11 +417,13 @@ def test_send_with_profile_valid(smtpctmppath, capsys, smtpc_params, profile_par
 @pytest.mark.parametrize('smtpc_params, message_params, expected',
     [
         [
-            ['--subject', 'some-subject', '--from', 'sender@smtpc.net', '--to', 'receiver1@smtpc.net', '--to', 'receiver2@smtpc.net',
+            [
+                '--subject', 'some-subject', '--from', 'sender@smtpc.net', '--to', 'receiver1@smtpc.net', '--to', 'receiver2@smtpc.net',
                 '--cc', 'cc1@smtpc.net', '--cc', 'cc2@smtpc.net', '--bcc', 'bcc1@smtpc.net', '--bcc', 'bcc2@smtpc.net',
                 '--body', 'some\nbody',
             ],
-            ['--subject', 'another-subject', '--from', 'another-sender@smtpc.net',
+            [
+                '--subject', 'another-subject', '--from', 'another-sender@smtpc.net',
                 '--to', 'another-receiver1@smtpc.net', '--to', 'another-receiver2@smtpc.net',
                 '--cc', 'another-cc1@smtpc.net', '--cc', 'another-cc2@smtpc.net',
                 '--bcc', 'another-bcc1@smtpc.net', '--bcc', 'another-bcc2@smtpc.net',
@@ -442,7 +444,8 @@ def test_send_with_profile_valid(smtpctmppath, capsys, smtpc_params, profile_par
         ],
         [
             [],
-            ['--subject', 'another-subject', '--from', 'another-sender@smtpc.net',
+            [
+                '--subject', 'another-subject', '--from', 'another-sender@smtpc.net',
                 '--to', 'another-receiver1@smtpc.net', '--to', 'another-receiver2@smtpc.net',
                 '--cc', 'another-cc1@smtpc.net', '--cc', 'another-cc2@smtpc.net',
                 '--bcc', 'another-bcc1@smtpc.net', '--bcc', 'another-bcc2@smtpc.net',
@@ -462,10 +465,12 @@ def test_send_with_profile_valid(smtpctmppath, capsys, smtpc_params, profile_par
             }
         ],
         [
-            ['--subject', 'some-subject', '--from', 'sender@smtpc.net',
+            [
+                '--subject', 'some-subject', '--from', 'sender@smtpc.net',
                 '--cc', 'cc1@smtpc.net', '--cc', 'cc2@smtpc.net',
             ],
-            ['--subject', 'another-subject', '--from', 'another-sender@smtpc.net',
+            [
+                '--subject', 'another-subject', '--from', 'another-sender@smtpc.net',
                 '--to', 'another-receiver1@smtpc.net', '--to', 'another-receiver2@smtpc.net',
                 '--cc', 'another-cc1@smtpc.net', '--cc', 'another-cc2@smtpc.net',
                 '--bcc', 'another-bcc1@smtpc.net', '--bcc', 'another-bcc2@smtpc.net',
@@ -559,9 +564,9 @@ def test_send_with_message_valid(smtpctmppath, capsys, smtpc_params, message_par
         assert sorted(received_message.keys()) == sorted(expected_headers)
 
         assert f"SMTPc/{smtpc.__version__}" in received_message['User-Agent']
-        assert expected['sender'] == received_message['From']
-        assert expected['to'] == received_message['To']
-        assert expected['cc'] == received_message['Cc']
+        assert received_message['From'] == expected['sender']
+        assert received_message['To'] == expected['to']
+        assert received_message['Cc'] == expected['cc']
         assert received_message.get_content_type() == 'text/plain'
         if '--subject' in smtpc_params or '--subject' in message_params:
             assert received_message['Subject'] == expected['subject']
