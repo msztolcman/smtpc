@@ -36,24 +36,30 @@ def parse_argv(argv: list) -> argparse.Namespace:
     content_type_choices = [item.lower() for item in ContentType.__members__]
     sentinel = object()
     body_params_epilog = textwrap.dedent('''
-        Content of email is built using few params:
-            --body (or alias: --body-plain, or data from STDIN)
-            --body-html "some body"
-            --body-type (one of: plain, html, alternative)
-            --raw-body
+        BODY:
+            Content of email is built using few params:
+                --body (or alias: --body-plain, or data from STDIN)
+                --body-html "some body"
+                --body-type (one of: plain, html, alternative)
+                --raw-body
 
-        Value of --body param is used depending on other params.
+            Value of --body param is used depending on other params.
 
-        If --raw-body is used, then only value of --body param (or STDIN data) is used (--body-html and
-        --body-type are ignored), and smtpc will not build message on itself, just use the value of --body param.
-        Also --header, --subject or other header/content related params are ignored, and you need to build
-        whole message body on itself.
+            If --raw-body is used, then only value of --body param (or STDIN data) is used (--body-html and
+            --body-type are ignored), and smtpc will not build message on itself, just use the value of --body param.
+            Also --header, --subject or other header/content related params are ignored, and you need to build
+            whole message body on itself.
 
-        --body-html is used in only one two cases:
-        - when --body-type is "html", and no --body/STDIN is used
-        - when --body-type is "alternative"
+            --body-html is used in only one two cases:
+            - when --body-type is "html", and no --body/STDIN is used
+            - when --body-type is "alternative"
 
-        In every other case, value of --body/STDIN is used as text/plain part of email.
+            In every other case, value of --body/STDIN is used as text/plain part of email.
+
+        EMAIL ADDRESSES:
+            Email addresses can be used in two forms:
+            - raw email address: "some-recipient@smtpc.net"
+            - email address with names: "Some Recipient <some-recipient@smtpc.net>"
     ''')
 
     parser = argparse.ArgumentParser('SMTPc')
