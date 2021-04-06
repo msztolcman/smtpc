@@ -145,7 +145,8 @@ class Builder:
         'subject',
         'envelope_from', 'address_from',
         'envelope_to', 'address_to', 'address_cc', 'reply_to',
-        'body_type', 'body_html', 'body', 'raw_body', 'template_fields', 'template_fields_json',
+        'body_type', 'body_html', 'body', 'raw_body',
+        'template_default_fields', 'template_fields', 'template_fields_json',
         'headers',
     )
 
@@ -185,6 +186,18 @@ class Builder:
         }
         for name in message_fields:
             self._set_property(name, message_fields[name], predefined_message, DEFAULTS_VALUES_MESSAGE)
+
+        self.template_default_fields = {
+            'smtpc_subject': self.subject,
+            'smtpc_envelope_from': self.envelope_from,
+            'smtpc_address_from': self.address_from,
+            'smtpc_envelope_to': self.envelope_to,
+            'smtpc_address_to': self.address_to,
+            'smtpc_address_cc': self.address_cc,
+            'smtpc_reply_to': self.reply_to,
+            'smtpc_body_type': self.body_type,
+            'smtpc_raw_body': self.raw_body,
+        }
 
     def execute(self) -> MIMEBase:
         if self.raw_body:
@@ -241,10 +254,10 @@ class Builder:
         setattr(self, name, value)
 
     def template(self, data: str) -> str:
-        if not self.template_fields and not self.template_fields_json:
+        if not self.template_fields and not self.template_fields_json and not self.template_default_fields:
             return data
 
-        fields = {}
+        fields = self.template_default_fields.copy()
         for field in self.template_fields:
             field, value = self._template_parse_field(field)
             fields[field] = value
