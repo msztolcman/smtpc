@@ -44,6 +44,7 @@ setup(
         'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
         'License :: OSI Approved :: MIT License',
         'Operating System :: POSIX',
         'Operating System :: MacOS :: MacOS X',
@@ -54,8 +55,11 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Topic :: Communications',
         'Topic :: Communications :: Email',
+        'Topic :: Communications :: Email :: Email Clients (MUA)',
         'Topic :: Utilities',
         'Topic :: Software Development',
+        'Topic :: System :: Systems Administration',
     ]
 )
