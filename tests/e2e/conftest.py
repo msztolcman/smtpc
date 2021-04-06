@@ -2,8 +2,6 @@ from unittest import mock
 
 import pytest
 
-import smtpc
-
 
 @pytest.fixture(scope='function', autouse=True)
 def patch_smtpc_cli_select_select():
