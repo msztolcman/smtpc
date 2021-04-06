@@ -53,6 +53,14 @@ def test_add_profile_missing_login_password(smtpctmppath, capsys):
         {'login': 'asd', 'password': 'qwe', 'host': '127.0.0.1', 'port': 465, 'ssl': True}
     ],
     [
+        ['--login', 'asd', '--password', 'qwe', '--host', '127.0.0.1', '--tls'],
+        {'login': 'asd', 'password': 'qwe', 'host': '127.0.0.1', 'tls': True}
+    ],
+    [
+        ['--login', 'asd', '--password', 'qwe', '--host', '127.0.0.1', '--ssl'],
+        {'login': 'asd', 'password': 'qwe', 'host': '127.0.0.1', 'ssl': True}
+    ],
+    [
         ['--login', 'asd', '--password', 'qwe', '--host', '127.0.0.1:465'],
         {'login': 'asd', 'password': 'qwe', 'host': '127.0.0.1', 'port': 465, 'ssl': True}
     ],

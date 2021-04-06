@@ -282,6 +282,15 @@ def test_send_raw_valid(smtpctmppath, capsys, params, expected_body):
                 'login': (),
             }
         ],
+        pytest.param(
+            ['--host', 'smtpc.net', '--tls'],
+            {
+                'connection': ('smtpc.net', 587),
+                'smtp':  {'source_address': None, 'timeout': 30},
+                'login': (),
+            },
+            marks=pytest.mark.skip(reason='not implemented yet'),
+        ),
         [
             ['--host', 'smtpc.net', '--port', '123'],
             {
@@ -325,6 +334,7 @@ def test_send_raw_valid(smtpctmppath, capsys, params, expected_body):
     ],
     ids=[
         '--host only, without port',
+        '--host only, without port, but with --tls',
         '--host and --port',
         '--host with port after colon',
         '--host with --tls',
@@ -401,7 +411,7 @@ def test_connection_args_valid(smtpctmppath, capsys, params, expected):
                 'smtp':  {'source_address': '2.2.2.2', 'timeout': 100},
                 'login': ('some-login', 'another-password'),
             },
-            marks=pytest.mark.skip(reason='doesn\'t work yet')
+            marks=pytest.mark.skip(reason='not implemented yet'),
         ),
     ],
     ids=[
