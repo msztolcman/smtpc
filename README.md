@@ -245,6 +245,7 @@ ChangeLog
 * added template fields from message configuration to templates, with prefix `smtpc_`
 * default subcommand for commands `profiles` and `messages` is `list` now (calling without
   subcommand will display list of profiles/messages instead of help)
+* allow reading message body from STDIN if no `--body` or `--body=-` is used
 * improved handling rejects from SMTP server
 * added short aliases for main commands: `p` - for `profiles`, `s` for `send`, `m` for `messages`
 * huge improvements for debug messages
