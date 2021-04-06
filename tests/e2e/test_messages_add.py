@@ -1,3 +1,5 @@
+from unittest import mock
+
 import pytest
 
 from smtpc import config
@@ -98,13 +100,15 @@ from . import *
     ],
 )
 def test_add_message_valid(smtpctmppath, capsys, params, expected):
-    r = callsmtpc(['messages', 'add', 'simple1', *params], capsys)
+    with mock.patch('smtpc.cli.select.select', autospec=True) as mocked_select_select:
+        mocked_select_select.return_value = (False,)
+        r = callsmtpc(['messages', 'add', 'simple1', *params], capsys)
 
-    assert r.code == ExitCodes.OK.value
-    data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
-    messages = data['messages']
-    assert 'simple1' in messages
-    assert messages['simple1'] == expected
+        assert r.code == ExitCodes.OK.value
+        data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
+        messages = data['messages']
+        assert 'simple1' in messages
+        assert messages['simple1'] == expected
 
 
 @pytest.mark.parametrize('params, expected_in_err',
@@ -221,13 +225,15 @@ def test_add_message_error(smtpctmppath, capsys, params, expected_in_err):
     ]
 )
 def test_add_message_body_valid(smtpctmppath, capsys, params, expected):
-    r = callsmtpc(['messages', 'add', 'simple1', *params], capsys)
+    with mock.patch('smtpc.cli.select.select', autospec=True) as mocked_select_select:
+        mocked_select_select.return_value = (False,)
+        r = callsmtpc(['messages', 'add', 'simple1', *params], capsys)
 
-    assert r.code == ExitCodes.OK.value
-    data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
-    messages = data['messages']
-    assert 'simple1' in messages
-    assert messages['simple1'] == expected
+        assert r.code == ExitCodes.OK.value
+        data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
+        messages = data['messages']
+        assert 'simple1' in messages
+        assert messages['simple1'] == expected
 
 
 @pytest.mark.parametrize('params, expected_in_err',

@@ -1,3 +1,5 @@
+from unittest import mock
+
 from smtpc import config
 from smtpc.enums import ExitCodes, ContentType
 
@@ -19,27 +21,30 @@ def test_delete_message_unknown_name(smtpctmppath, capsys):
 
 
 def test_delete_message_valid(smtpctmppath, capsys):
-    r = callsmtpc(['messages', 'add', 'simple1', '--from', 'from1@smtpc.net', '--to', 'receiver1@smtpc.net'], capsys)
+    with mock.patch('smtpc.cli.select.select', autospec=True) as mocked_select_select:
+        mocked_select_select.return_value = (False,)
 
-    assert r.code == ExitCodes.OK.value
-    data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
-    messages = data['messages']
-    assert 'simple1' in messages
-    assert messages['simple1'] == {'address_from': 'from1@smtpc.net', 'address_to': ['receiver1@smtpc.net']}
+        r = callsmtpc(['messages', 'add', 'simple1', '--from', 'from1@smtpc.net', '--to', 'receiver1@smtpc.net'], capsys)
 
-    r = callsmtpc(['messages', 'add', 'simple2', '--from', 'from2@smtpc.net', '--to', 'receiver2@smtpc.net'], capsys)
+        assert r.code == ExitCodes.OK.value
+        data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
+        messages = data['messages']
+        assert 'simple1' in messages
+        assert messages['simple1'] == {'address_from': 'from1@smtpc.net', 'address_to': ['receiver1@smtpc.net']}
 
-    assert r.code == ExitCodes.OK.value
-    data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
-    messages = data['messages']
-    assert 'simple1' in messages
-    assert messages['simple1'] == {'address_from': 'from1@smtpc.net', 'address_to': ['receiver1@smtpc.net']}
-    assert 'simple2' in messages
-    assert messages['simple2'] == {'address_from': 'from2@smtpc.net', 'address_to': ['receiver2@smtpc.net']}
+        r = callsmtpc(['messages', 'add', 'simple2', '--from', 'from2@smtpc.net', '--to', 'receiver2@smtpc.net'], capsys)
 
-    r = callsmtpc(['messages', 'delete', 'simple1'], capsys)
-    assert r.code == ExitCodes.OK.value
-    data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
-    messages = data['messages']
-    assert 'simple2' in messages
-    assert messages['simple2'] == {'address_from': 'from2@smtpc.net', 'address_to': ['receiver2@smtpc.net']}
+        assert r.code == ExitCodes.OK.value
+        data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
+        messages = data['messages']
+        assert 'simple1' in messages
+        assert messages['simple1'] == {'address_from': 'from1@smtpc.net', 'address_to': ['receiver1@smtpc.net']}
+        assert 'simple2' in messages
+        assert messages['simple2'] == {'address_from': 'from2@smtpc.net', 'address_to': ['receiver2@smtpc.net']}
+
+        r = callsmtpc(['messages', 'delete', 'simple1'], capsys)
+        assert r.code == ExitCodes.OK.value
+        data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
+        messages = data['messages']
+        assert 'simple2' in messages
+        assert messages['simple2'] == {'address_from': 'from2@smtpc.net', 'address_to': ['receiver2@smtpc.net']}
