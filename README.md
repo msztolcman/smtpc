@@ -33,7 +33,8 @@ Features
 * Ability to edit raw message body just before sending
 * Templating system customizing messages (with Jinja2)
 * Clean and readable SMTP session logs (if enabled). Especially with
-  [colorama](https://pypi.org/project/colorama/) module!
+  [colorama](https://pypi.org/project/colorama/) module (available by default in
+  `smtpc[extended]` version)!
 * SSL and TLS connections, of course
 * You can easily spoof your own messages, by specifying other sender/recipient in
   message headers, and other one for SMTP session
@@ -52,7 +53,8 @@ The simplest way is to use Python's built-in package system:
     python3 -m pip install 'smtpc[extended]'
 
 It will install `SMTPc` and related packages for the best user experience. If you want
-to install the basic version without additions, then start with:
+to install the basic version without additions (colors, extended Jinja2 templates),
+then start with:
 
     python3 -m pip install smtpc
 
