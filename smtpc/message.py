@@ -141,6 +141,11 @@ class SmtpDebugPrinter:
         return []
 
 
+class empty:
+    def __getattr__(self, item):
+        return None
+
+
 class Builder:
     __slots__ = (
         'subject',
@@ -190,6 +195,12 @@ class Builder:
         }
         for name in message_fields:
             self._set_property(name, message_fields[name], predefined_message, DEFAULTS_VALUES_MESSAGE)
+
+        if not predefined_profile:
+            predefined_profile = empty()
+
+        if not predefined_message:
+            predefined_message = empty()
 
         self.template_default_fields = {
             'smtpc_subject': self.subject,
