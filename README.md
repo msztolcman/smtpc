@@ -232,6 +232,9 @@ Help!
 I'm backend developer, not a frontend guy nor designer... And project requires some logo and/or icon.
 If you're able to prepare some for this project, do not hesitate to [mail me](mailto:marcin@urzenia.net) :)
 
+Also, if you have an idea how to enhance `SMTPc`, [please fill the ticket](https://github.com/msztolcman/smtpc/issues).
+Every idea, every feature request can help you, me and others!
+
 Authors
 -------
 
