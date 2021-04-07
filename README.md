@@ -111,7 +111,7 @@ In the second example above, we are using a predefined message named `plain`, bu
 You don't need to use any predefined profiles or messages. You can just pass them directly when sending:
 
 ```bash
-smtpc send --host 127.0.0.1 --port 1025 --body-type html --subject 'Some html email' --body-html 'Some <b>HTML</b> message body' --from not-funny@smtpc.net --to receiver@smtpc.net
+smtpc send --host 127.0.0.1 --port 1025 --body-type html --subject 'Some html email' --body 'Some <b>HTML</b> message body' --from not-funny@smtpc.net --to receiver@smtpc.net
 ```
 
 But it's not where the fun is :)
@@ -170,7 +170,7 @@ to install [Jinja2](https://jinja.palletsprojects.com) module (more: [Installati
 You willl then have the full power of one of best templating engines Python has. Here's an example:
 
 ```bash
-smtpc messages add template-test --subject 'Some of my projects, state on {{ date }}' --from templated@smtpc.net --to receiver@smtpc.net --body-html '<p>Here I am!</p>
+smtpc messages add template-test --subject 'Some of my projects, state on {{ date }}' --from templated@smtpc.net --to receiver@smtpc.net --body-type html --body '<p>Here I am!</p>
 {% if projects %}
 <p>Some of my projects:</p>
 <ul>
