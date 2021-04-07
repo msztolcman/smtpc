@@ -112,7 +112,7 @@ class SmtpDebugPrinter:
         args[0] = f'{self.fore_magenta}server: {self.fore_reset}'
 
         for idx, line in enumerate(args[1:]):
-            if isinstance(line, (str, bytes)) and line.startswith("b'"):
+            if isinstance(line, (str, bytes)) and (line.startswith("b'") or line.startswith('b"')):
                 line = line[2:-1]
 
             line = re.sub(r'^(\d+)(\s+|-)', self._smtp_response_code_replacer, line)
@@ -431,7 +431,7 @@ class Sender:
             smtp._host = self.host
             smtp_code, smtp_message = smtp.connect(self.host, self.port, source_address=self.source_address)
             logger.debug('connected', host=self.host, port=self.port, source_address=self.source_address,
-                smtp_code=smtp_code, smtp_message=smtp_message)
+                smtp_code=smtp_code, smtp_message=smtp_message.decode())
         except socket.gaierror as exc:
             self.log_exception('connection error', host=self.host, port=self.port, errno=exc.errno, message=exc.strerror)
             exitc(ExitCodes.CONNECTION_ERROR)
