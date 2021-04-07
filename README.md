@@ -205,7 +205,7 @@ and the body (slightly reformatted here):
 <p>That&#39;s all folks!</p>
 ```
 
-There are also available fields from message configuration (like `subject` or `address_to`).
+There are also available fields from message configuration (like `subject` or `to` addresses).
 These fields (full list below) are the final values (calculated from `CLI` params to `SMTPc` and
 predefined message configuration). All of them are prefixed with `smtpc_`. This allows for
 much better customization of emails.
