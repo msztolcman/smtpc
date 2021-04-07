@@ -21,7 +21,7 @@ If you like this tool, just [say thanks](https://saythanks.io/to/marcin%40urzeni
 Current stable version
 ----------------------
 
-0.9.0
+0.9.1
 
 Features
 --------
@@ -242,6 +242,10 @@ If you find a bug or have an idea to enhance this tool, please use GitHub's
 
 ChangeLog
 ---------
+
+### v0.9.1
+
+* minor bugfixes
 
 ### v.0.9.0
 
