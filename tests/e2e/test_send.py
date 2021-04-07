@@ -12,7 +12,7 @@ from . import *
 def test_send_simple_valid(smtpctmppath, capsys):
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', 'OK, mocked']
+        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
         r = callsmtpc(['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net'], capsys)
 
         mocked_smtp_class.assert_called()
@@ -107,10 +107,10 @@ def test_send_simple_valid(smtpctmppath, capsys):
 def test_send_simple_text_valid(smtpctmppath, capsys, params, expected):
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', 'OK, mocked']
+        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
 
         r = callsmtpc(params, capsys)
-        assert r.code == ExitCodes.OK.value
+        assert r.code == ExitCodes.OK.value, r
 
         mocked_smtp_class.assert_called()
         mocked_smtp.ehlo.assert_called()
@@ -212,7 +212,7 @@ message
 def test_send_alternative_valid(smtpctmppath, capsys, params, expected_body):
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', 'OK, mocked']
+        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
         r = callsmtpc(params, capsys)
         assert r.code == ExitCodes.OK.value
 
@@ -255,7 +255,7 @@ message'''
 def test_send_raw_valid(smtpctmppath, capsys, params, expected_body):
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', 'OK, mocked']
+        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
         r = callsmtpc(params, capsys)
         assert r.code == ExitCodes.OK.value
 
@@ -346,7 +346,7 @@ def test_send_raw_valid(smtpctmppath, capsys, params, expected_body):
 def test_connection_args_valid(smtpctmppath, capsys, params, expected):
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', 'OK, mocked']
+        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
         r = callsmtpc(['send', '--from', 'sender@smtpc.net', '--to', 'receiver@smtpc.net',
             *params], capsys)
         assert r.code == ExitCodes.OK.value
@@ -432,7 +432,7 @@ def test_send_with_profile_valid(smtpctmppath, capsys, smtpc_params, profile_par
 
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', 'OK, mocked']
+        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
 
         r = callsmtpc(['send', '--from', 'sender@smtpc.net', '--to', 'receiver@smtpc.net', '--profile', 'simple1',
             *smtpc_params], capsys)
@@ -586,7 +586,7 @@ def test_send_with_message_valid(smtpctmppath, capsys, smtpc_params, message_par
 
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', 'OK, mocked']
+        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
 
         r = callsmtpc(['send', '--message', 'simple1',
             *smtpc_params], capsys)
@@ -625,7 +625,7 @@ def test_send_interactive_password(smtpctmppath, capsys):
         mock.patch('getpass.getpass', lambda: 'pass')\
     :
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', 'OK, mocked']
+        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
         r = callsmtpc(['send', '--from', 'sender@smtpc.net', '--to', 'receiver@smtpc.net', '--login', 'asd', '--password'], capsys)
         assert r.code == ExitCodes.OK.value, r
 
