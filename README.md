@@ -252,6 +252,10 @@ If you find a bug or have an idea to enhance this tool, please use GitHub's
 ChangeLog
 ---------
 
+### v0.10.0
+
+* adding `Date` header when building new email message
+
 ### v0.9.2
 
 * regression errors fixed

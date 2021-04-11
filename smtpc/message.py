@@ -2,6 +2,7 @@ __all__ = ['Builder', 'Sender']
 
 import copy
 import email
+import email.utils
 import io
 import json
 import os
@@ -264,6 +265,7 @@ class Builder:
                 if self.body_html:
                     message.attach(MIMEText(self.template(self.body_html), 'html'))
 
+        message['Date'] = email.utils.formatdate(usegmt=True)
         for header in self.headers:
             header_name, header_value = header.split('=', 1)
             message[header_name.strip()] = header_value.strip()
