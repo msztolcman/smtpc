@@ -202,6 +202,8 @@ def parse_argv(argv: list) -> argparse.Namespace:
     p_messages_add = p_messages_sub.add_parser('add', help='Add new message.', epilog=body_params_epilog,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     p_messages_add.add_argument('name', nargs=1, help='Unique name of message.')
+    p_messages_add.add_argument('--profile', choices=PREDEFINED_PROFILES.keys(),
+        help='Default profile used when sending emails.')
     p_messages_add.add_argument('--subject', '-j',
         help='Subject for email.')
     p_messages_add.add_argument('--body', '--body-plain', '-b',
@@ -460,6 +462,7 @@ class MessagesCommand(AbstractCommand):
             body_type=self.args.body_type,
             raw_body=self.args.raw_body,
             headers=self.args.headers,
+            profile=self.args.profile,
         ))
         # TODO: shouldn't be logger call
         logger.info('Message saved', message=self.args.name[0])
@@ -519,10 +522,17 @@ class SendCommand(AbstractCommand):
         if self.args.profile:
             profile = PREDEFINED_PROFILES[self.args.profile]
 
-        predefined_message = None if not self.args.message else PREDEFINED_MESSAGES[self.args.message]
+        predefined_message: PredefinedMessage = None if not self.args.message else PREDEFINED_MESSAGES[self.args.message]
         if not predefined_message and self.args.raw_body:
             message_body = self.args.body
         else:
+            if not profile and predefined_message and predefined_message.profile:
+                try:
+                    profile = PREDEFINED_PROFILES[predefined_message.profile]
+                except KeyError:
+                    logger.error(f"Specified with message profile \"{predefined_message.profile}\" doesn't exists")
+                    exitc(ExitCodes.OTHER)
+
             message_builder = message.Builder(
                 predefined_message=predefined_message,
                 predefined_profile=profile,

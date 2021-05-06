@@ -11,7 +11,7 @@ from .enums import ContentType
 class PredefinedMessage:
     __slots__ = (
         'name', 'envelope_from', 'address_from', 'envelope_to', 'address_to', 'address_cc', 'address_bcc', 'reply_to',
-        'subject', 'body', 'body_html', 'raw_body', 'body_type', 'headers',
+        'subject', 'body', 'body_html', 'raw_body', 'body_type', 'headers', 'profile',
     )
 
     def __init__(self,
@@ -29,6 +29,7 @@ class PredefinedMessage:
         raw_body: Optional[bool] = None,
         body_type: Optional[ContentType] = None,
         headers: Optional[List[str]] = None,
+        profile: Optional[str] = None,
     ) -> NoReturn:
         self.name = name
         self.envelope_from = envelope_from
@@ -44,6 +45,7 @@ class PredefinedMessage:
         self.raw_body = raw_body
         self.body_type = body_type
         self.headers = headers
+        self.profile = profile
 
     def to_dict(self) -> dict:
         keys = list(copy.copy(self.__slots__))
@@ -105,6 +107,7 @@ class PredefinedMessages(dict):
                 raw_body=raw_body,
                 body_type=ContentType(message['body_type']) if 'body_type' in message else None,
                 headers=message.get('headers'),
+                profile=message.get('profile'),
             )
 
         if rewrite_messages:

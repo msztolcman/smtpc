@@ -108,6 +108,14 @@ smtpc send --profile sendria --message plain --subject 'Changed subject for plai
 ```
 In the second example above, we are using a predefined message named `plain`, but with a changed subject.
 
+```bash
+smtpc messages add default-profile --profile sendria --subject 'Default profile' --body 'Plain email with default profile' --from plain@smtpc.net --to receiver@smtpc.net
+smtpc send --mesage default-profile # will use profile specified when creating message; `sendria`
+```
+
+Here we have specified some simple email, but together there is saved also profile name.
+Now, send specified message will use this profile by default!
+
 You don't need to use any predefined profiles or messages. You can just pass them directly when sending:
 
 ```bash
@@ -254,6 +262,8 @@ ChangeLog
 
 ### v0.10.0
 
+* predefined message can now have attached default profile
+  that will be used when sending
 * adding `Date` header when building new email message
 * adding `Message-ID` header when building new email message
 * work with older SMTP servers which handle only `HELO` command (doesn't handle newest `EHLO`)
