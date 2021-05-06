@@ -256,6 +256,7 @@ ChangeLog
 
 * adding `Date` header when building new email message
 * adding `Message-ID` header when building new email message
+* work with older SMTP servers which handle only `HELO` command (doesn't handle newest `EHLO`)
 * fixed issue where `SMTPc` doesn't send `--identify-as` value when using TLS
 
 ### v0.9.2

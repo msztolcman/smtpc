@@ -455,12 +455,13 @@ class Sender:
             self.log_exception('connection error', host=self.host, port=self.port, message=str(exc), exception=exc.__class__.__name__)
             exitc(ExitCodes.CONNECTION_ERROR)
 
-        smtp.ehlo(self.identify_as)
+        # HACK: smtp.ehlo_or_helo_if_needed doesn't recognize `name` argument from smtp.ehlo/helo
+        self.smtp_ehlo_or_helo_if_needed(smtp, self.identify_as)
 
         if self.tls:
             logger.debug('upgrading connection to tls')
             smtp.starttls()
-            smtp.ehlo(self.identify_as)
+            self.smtp_ehlo_or_helo_if_needed(smtp, self.identify_as)
 
         if self.login and self.password:
             logger.debug('calling login, will authorize when required', login=self.login)
@@ -487,6 +488,13 @@ class Sender:
                 senders.remove(address)
 
         return senders
+
+    def smtp_ehlo_or_helo_if_needed(self, smtp: smtplib.SMTP, name=''):
+        if smtp.helo_resp is None and smtp.ehlo_resp is None:
+            if not (200 <= smtp.ehlo(name)[0] <= 299):
+                (code, resp) = smtp.helo(name)
+                if not (200 <= code <= 299):
+                    raise smtplib.SMTPHeloError(code, resp)
 
     def prepare_password(self, password: Optional[str], key: str) -> str:
         if password is None:
