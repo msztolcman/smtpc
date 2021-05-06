@@ -618,6 +618,7 @@ def main(argv: Optional[list] = None) -> NoReturn:
     args = parse_argv(argv)
     configure_logger(args.debug_level > 0)
 
+    handler = None
     if args.command == 'profiles':
         handler = ProfilesCommand(args)
     elif args.command == 'send':

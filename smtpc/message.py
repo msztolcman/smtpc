@@ -143,8 +143,8 @@ class SmtpDebugPrinter:
         return []
 
 
-class empty:
-    def __getattr__(self, item):
+class empty:  # noqa: N801
+    def __getattr__(self, item: Any) -> None:
         return None
 
 
@@ -489,7 +489,7 @@ class Sender:
 
         return senders
 
-    def smtp_ehlo_or_helo_if_needed(self, smtp: smtplib.SMTP, name=''):
+    def smtp_ehlo_or_helo_if_needed(self, smtp: smtplib.SMTP, name: str = '') -> NoReturn:
         if smtp.helo_resp is None and smtp.ehlo_resp is None:
             if not (200 <= smtp.ehlo(name)[0] <= 299):
                 (code, resp) = smtp.helo(name)
