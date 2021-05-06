@@ -457,6 +457,7 @@ class Sender:
         if self.tls:
             logger.debug('upgrading connection to tls')
             smtp.starttls()
+            smtp.ehlo(self.identify_as)
 
         if self.login and self.password:
             logger.debug('calling login, will authorize when required', login=self.login)
