@@ -1,4 +1,4 @@
-__all__ = ['CallResult', 'callsmtpc', 'load_toml_file', 'smtpctmppath']
+__all__ = ['CallResult', 'callsmtpc', 'load_toml_file', 'smtpctmppath', 'prepare_smtp_mock', ]
 
 from collections import namedtuple
 from unittest import mock
@@ -46,3 +46,9 @@ def load_toml_file(name):
 def smtpctmppath(tmp_path, monkeypatch):
     monkeypatch.setenv(config.ENV_SMTPC_CONFIG_DIR, str(tmp_path))
     return tmp_path
+
+
+def prepare_smtp_mock(mocked_smtp):
+    mocked_smtp.connect.return_value = ['250', b'OK, mocked']
+    mocked_smtp.ehlo_resp = mocked_smtp.helo_resp = None
+    mocked_smtp.ehlo.return_value = [250]

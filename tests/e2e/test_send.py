@@ -12,7 +12,7 @@ from . import *
 def test_send_simple_valid(smtpctmppath, capsys):
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
+        prepare_smtp_mock(mocked_smtp)
         r = callsmtpc(['send', '--from', 'send@smtpc.net', '--to', 'receive@smtpc.net'], capsys)
 
         mocked_smtp_class.assert_called()
@@ -24,7 +24,7 @@ def test_send_simple_valid(smtpctmppath, capsys):
         assert smtp_sendmail_args[1] == ['receive@smtpc.net']
 
         received_message = email.message_from_string(smtp_sendmail_args[2])
-        assert sorted(received_message.keys()) == ['Content-Transfer-Encoding', 'Content-Type', 'From', 'MIME-Version', 'To', 'User-Agent']
+        assert sorted(received_message.keys()) == ['Content-Transfer-Encoding', 'Content-Type', 'Date', 'From', 'MIME-Version', 'Message-ID', 'To', 'User-Agent', ]
 
         assert f"SMTPc/{smtpc.__version__}" in received_message['User-Agent']
         assert 'send@smtpc.net' == received_message['From']
@@ -107,7 +107,7 @@ def test_send_simple_valid(smtpctmppath, capsys):
 def test_send_simple_text_valid(smtpctmppath, capsys, params, expected):
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
+        prepare_smtp_mock(mocked_smtp)
 
         r = callsmtpc(params, capsys)
         assert r.code == ExitCodes.OK.value, r
@@ -121,7 +121,7 @@ def test_send_simple_text_valid(smtpctmppath, capsys, params, expected):
         assert smtp_sendmail_args[1] == expected['receivers']
 
         received_message = email.message_from_string(smtp_sendmail_args[2])
-        assert sorted(received_message.keys()) == ['Content-Transfer-Encoding', 'Content-Type', 'From', 'MIME-Version', 'To', 'User-Agent']
+        assert sorted(received_message.keys()) == ['Content-Transfer-Encoding', 'Content-Type', 'Date', 'From', 'MIME-Version', 'Message-ID', 'To', 'User-Agent', ]
 
         assert f"SMTPc/{smtpc.__version__}" in received_message['User-Agent']
         assert received_message['From'] == expected['sender']
@@ -212,7 +212,7 @@ message
 def test_send_alternative_valid(smtpctmppath, capsys, params, expected_body):
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
+        prepare_smtp_mock(mocked_smtp)
         r = callsmtpc(params, capsys)
         assert r.code == ExitCodes.OK.value
 
@@ -225,7 +225,7 @@ def test_send_alternative_valid(smtpctmppath, capsys, params, expected_body):
         assert smtp_sendmail_args[1] == ['receive@smtpc.net']
 
         received_message = email.message_from_string(smtp_sendmail_args[2])
-        assert sorted(received_message.keys()) == ['Content-Type', 'From', 'MIME-Version', 'To', 'User-Agent']
+        assert sorted(received_message.keys()) == ['Content-Type', 'Date', 'From', 'MIME-Version', 'Message-ID', 'To', 'User-Agent', ]
 
         assert f"SMTPc/{smtpc.__version__}" in received_message['User-Agent']
         assert 'send@smtpc.net' == received_message['From']
@@ -255,7 +255,7 @@ message'''
 def test_send_raw_valid(smtpctmppath, capsys, params, expected_body):
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
+        prepare_smtp_mock(mocked_smtp)
         r = callsmtpc(params, capsys)
         assert r.code == ExitCodes.OK.value
 
@@ -346,7 +346,7 @@ def test_send_raw_valid(smtpctmppath, capsys, params, expected_body):
 def test_connection_args_valid(smtpctmppath, capsys, params, expected):
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
+        prepare_smtp_mock(mocked_smtp)
         r = callsmtpc(['send', '--from', 'sender@smtpc.net', '--to', 'receiver@smtpc.net',
             *params], capsys)
         assert r.code == ExitCodes.OK.value
@@ -432,7 +432,7 @@ def test_send_with_profile_valid(smtpctmppath, capsys, smtpc_params, profile_par
 
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
+        prepare_smtp_mock(mocked_smtp)
 
         r = callsmtpc(['send', '--from', 'sender@smtpc.net', '--to', 'receiver@smtpc.net', '--profile', 'simple1',
             *smtpc_params], capsys)
@@ -586,7 +586,7 @@ def test_send_with_message_valid(smtpctmppath, capsys, smtpc_params, message_par
 
     with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
+        prepare_smtp_mock(mocked_smtp)
 
         r = callsmtpc(['send', '--message', 'simple1',
             *smtpc_params], capsys)
@@ -598,8 +598,8 @@ def test_send_with_message_valid(smtpctmppath, capsys, smtpc_params, message_par
         assert smtp_sendmail_args[1] == expected['envelope_to']
 
         received_message = email.message_from_string(smtp_sendmail_args[2])
-        expected_headers = ['Content-Transfer-Encoding', 'Content-Type', 'From', 'MIME-Version',
-            'To', 'User-Agent']
+        expected_headers = ['Content-Transfer-Encoding', 'Content-Type', 'Date', 'From', 'MIME-Version',
+            'Message-ID', 'To', 'User-Agent']
         if '--cc' in smtpc_params or '--cc' in message_params:
             expected_headers.append('Cc')
         if '--subject' in smtpc_params or '--subject' in message_params:
@@ -619,13 +619,138 @@ def test_send_with_message_valid(smtpctmppath, capsys, smtpc_params, message_par
         assert message_body[1] == expected['body']
 
 
+@pytest.mark.parametrize('profile_params, message_params, expected',
+    [
+        [
+            [
+                '--host', 'example.net', '--port', '456', '--login', 'some-login', '--password', 'some-password',
+            ],
+            [
+                '--subject', 'some-subject', '--from', 'sender@smtpc.net',
+                '--to', 'receiver@smtpc.net', '--body', 'some\nbody',
+            ],
+            {
+                'sender': 'sender@smtpc.net',
+                'envelope_from': 'sender@smtpc.net',
+                'to': 'receiver@smtpc.net',
+                'envelope_to': ['receiver@smtpc.net', ],
+                'subject': 'some-subject', 'body': 'some\nbody',
+            }
+        ],
+    ],
+    ids=[
+        'sending predefined email with saved profile',
+    ]
+)
+def test_send_with_message_and_saved_profile_valid(smtpctmppath, capsys, profile_params, message_params, expected):
+    r = callsmtpc(['profiles', 'add', 'simple1', *profile_params], capsys)
+    assert r.code == ExitCodes.OK.value, r
+
+    data = load_toml_file(smtpctmppath / config.PREDEFINED_PROFILES_FILE.name)
+    profiles = data['profiles']
+    assert 'simple1' in profiles
+
+    r = callsmtpc(['messages', 'add', 'simple1', '--profile', 'simple1', *message_params], capsys)
+    assert r.code == ExitCodes.OK.value, r
+
+    data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
+    messages = data['messages']
+    assert 'simple1' in messages
+
+    with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
+        mocked_smtp = mocked_smtp_class.return_value
+        prepare_smtp_mock(mocked_smtp)
+
+        r = callsmtpc(['send', '--message', 'simple1'], capsys)
+        assert r.code == ExitCodes.OK.value, r
+
+        mocked_smtp.sendmail.assert_called()
+        smtp_sendmail_args = mocked_smtp.sendmail.call_args.args
+        assert smtp_sendmail_args[0] == expected['envelope_from']
+        assert smtp_sendmail_args[1] == expected['envelope_to']
+
+        received_message = email.message_from_string(smtp_sendmail_args[2])
+        expected_headers = ['Content-Transfer-Encoding', 'Content-Type', 'From', 'MIME-Version',
+            'To', 'User-Agent', 'Subject', 'Date', 'Message-ID', ]
+        assert sorted(received_message.keys()) == sorted(expected_headers)
+
+        assert f"SMTPc/{smtpc.__version__}" in received_message['User-Agent']
+        assert received_message['From'] == expected['sender']
+        assert received_message['To'] == expected['to']
+        assert received_message.get_content_type() == 'text/plain'
+        assert received_message['Subject'] == expected['subject']
+
+        message_body = received_message.as_string().split("\n\n", 1)
+        assert len(message_body) == 2, 'No message body found'
+        assert message_body[1] == expected['body']
+
+
+@pytest.mark.parametrize('profile_params, message_params, expected',
+    [
+        [
+            [
+                '--host', 'example.net', '--port', '456', '--login', 'some-login', '--password', 'some-password',
+            ],
+            [
+                '--subject', 'some-subject', '--from', 'sender@smtpc.net',
+                '--to', 'receiver@smtpc.net', '--body', 'some\nbody',
+            ],
+            {
+                'sender': 'sender@smtpc.net',
+                'envelope_from': 'sender@smtpc.net',
+                'to': 'receiver@smtpc.net',
+                'envelope_to': ['receiver@smtpc.net', ],
+                'subject': 'some-subject', 'body': 'some\nbody',
+            }
+        ],
+    ],
+    ids=[
+        'sending predefined email with saved profile',
+    ]
+)
+def test_send_with_message_and_saved_profile_invalid(smtpctmppath, capsys, profile_params, message_params, expected):
+    r = callsmtpc(['profiles', 'add', 'simple1', *profile_params], capsys)
+    assert r.code == ExitCodes.OK.value, r
+
+    data = load_toml_file(smtpctmppath / config.PREDEFINED_PROFILES_FILE.name)
+    profiles = data['profiles']
+    assert 'simple1' in profiles
+
+    r = callsmtpc(['messages', 'add', 'simple1', '--profile', 'simple1', *message_params], capsys)
+    assert r.code == ExitCodes.OK.value, r
+
+    data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
+    messages = data['messages']
+    assert 'simple1' in messages
+
+    r = callsmtpc(['profiles', 'delete', 'simple1'], capsys)
+    assert r.code == ExitCodes.OK.value, r
+
+    data = load_toml_file(smtpctmppath / config.PREDEFINED_PROFILES_FILE.name)
+    profiles = data['profiles']
+    assert 'simple1' not in profiles
+
+    with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
+        mocked_smtp = mocked_smtp_class.return_value
+        prepare_smtp_mock(mocked_smtp)
+
+        try:
+            r = callsmtpc(['send', '--message', 'simple1'], capsys)
+
+            assert r.code == ExitCodes.OTHER.value, r
+        # HACK: some error in pytest: https://github.com/pytest-dev/pytest/issues/5502
+        except Exception as exc:
+            if 'I/O operation on closed file' not in str(exc):
+                raise
+
+
 def test_send_interactive_password(smtpctmppath, capsys):
     with \
         mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class,\
         mock.patch('getpass.getpass', lambda: 'pass')\
     :
         mocked_smtp = mocked_smtp_class.return_value
-        mocked_smtp.connect.return_value = ['250', b'OK, mocked']
+        prepare_smtp_mock(mocked_smtp)
         r = callsmtpc(['send', '--from', 'sender@smtpc.net', '--to', 'receiver@smtpc.net', '--login', 'asd', '--password'], capsys)
         assert r.code == ExitCodes.OK.value, r
 
