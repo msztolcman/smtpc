@@ -10,6 +10,7 @@ import re
 import smtplib
 import socket
 import sys
+import uuid
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -269,6 +270,8 @@ class Builder:
         for header in self.headers:
             header_name, header_value = header.split('=', 1)
             message[header_name.strip()] = header_value.strip()
+
+        message['Message-ID'] = f'<{uuid.uuid4()}@smtpc>'
 
         if self.subject:
             message['Subject'] = self.template(self.subject)
