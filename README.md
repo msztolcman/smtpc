@@ -255,6 +255,7 @@ ChangeLog
 ### v0.10.0
 
 * adding `Date` header when building new email message
+* fixed issue where `SMTPc` doesn't send `--identify-as` value when using TLS
 
 ### v0.9.2
 
