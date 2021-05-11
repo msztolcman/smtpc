@@ -605,6 +605,7 @@ class SendCommand(AbstractCommand):
             receivers = send_message.execute()
         except (smtplib.SMTPSenderRefused, smtplib.SMTPAuthenticationError) as exc:
             logger.error(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
+            raise SMTPcError(exc.smtp_error.decode()) from None
 
         print('Message sent to:', ', '.join(receivers))
 
