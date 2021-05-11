@@ -89,6 +89,8 @@ def parse_argv(argv: list) -> argparse.Namespace:
     p_send.add_argument('--password', '-p', nargs='?', default=sentinel,
         help='Password for SMTP authentication. Required if --login was given. If no password was passed, will ask '
                'interactively in a safe way.')
+    p_send.add_argument('--auth-method', choices=auth_method_choices,
+        help='Force to use selected auth method.')
     p_send.add_argument('--host', '-s',
         help='SMTP server. Can be also together with port, ie: 127.0.0.1:465.')
     p_send.add_argument('--port', '-o', type=int,
@@ -107,11 +109,8 @@ def parse_argv(argv: list) -> argparse.Namespace:
         help='Domain used for SMTP identification in EHLO/HELO command.')
     p_send.add_argument('--source-address',
         help='Source IP address to use when connecting.')
-
     p_send.add_argument('--disable-ehlo', action='store_true',
         help='Don\'t use ESMTP EHLO command, only HELO.')
-    p_send.add_argument('--auth-method', choices=auth_method_choices,
-        help='Force to use selected auth method.')
 
     # SEND command - message related stuff
     p_send.add_argument('--subject', '-j',
