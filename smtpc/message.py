@@ -26,7 +26,7 @@ except ImportError:
 from . import __version__
 from . import config
 from .defaults import DEFAULTS_VALUES_MESSAGE, DEFAULTS_VALUES_PROFILE
-from .enums import ContentType, ExitCodes
+from .enums import ContentType, ExitCodes, SMTPAuthMethod
 from .errors import InvalidTemplateFieldNameError, InvalidJsonTemplateError
 from .predefined_messages import PredefinedMessage
 from .predefined_profiles import PredefinedProfile
@@ -346,7 +346,7 @@ class Sender:
         'envelope_to', 'address_to', 'address_cc', 'address_bcc', 'reply_to',
         'message_body', 'predefined_profile', 'predefined_message',
         'debug_level', 'dry_run',
-        'disable_ehlo',
+        'disable_ehlo', 'auth_method',
     )
 
     def __init__(self, *,
@@ -375,6 +375,7 @@ class Sender:
         predefined_message: Optional[PredefinedMessage],
         dry_run: Optional[bool],
         disable_ehlo: Optional[bool],
+        auth_method: Optional[SMTPAuthMethod],
     ) -> NoReturn:
         self.debug_level = debug_level
         self.message_body = message_body
@@ -387,6 +388,7 @@ class Sender:
         profile_fields = {
             'login': login,
             'password': password,
+            'auth_method': auth_method,
             'host': host,
             'port': port,
             'connection_timeout': connection_timeout,
@@ -467,8 +469,7 @@ class Sender:
             self.smtp_ehlo_or_helo_if_needed(smtp, self.identify_as, self.disable_ehlo)
 
         if self.login and self.password:
-            logger.debug('calling login, will authorize when required', login=self.login)
-            smtp.login(self.login, self.password)
+            self.smtp_login(smtp, self.login, self.password, self.auth_method)
 
         envelope_from = self.envelope_from or self.address_from
         envelope_to = self.envelope_to or (self.address_to + self.address_cc + self.address_bcc)
@@ -498,6 +499,16 @@ class Sender:
                 (code, resp) = smtp.helo(name)
                 if not (200 <= code <= 299):
                     raise smtplib.SMTPHeloError(code, resp)
+
+    def smtp_login(self, smtp: smtplib.SMTP, login: str, password: str, auth_method: SMTPAuthMethod = SMTPAuthMethod.DEFAULT):
+        if auth_method in (SMTPAuthMethod.LOGIN, SMTPAuthMethod.PLAIN, SMTPAuthMethod.CRAM_MD5):
+            logger.debug(f'authorization method forced to {auth_method}', login=self.login)
+            # HACK: of not calling smtp.login, then these properties must be set manually
+            smtp.user, smtp.password = login, password
+            smtp.auth(auth_method.value, getattr(smtp, f'auth_{auth_method.value}'))
+        else:
+            logger.debug('calling login, will authorize when required', login=self.login, auth_method=auth_method)
+            smtp.login(self.login, self.password)
 
     def prepare_password(self, password: Optional[str], key: str) -> str:
         if password is None:

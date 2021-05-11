@@ -24,7 +24,7 @@ def test_list_profiles_valid(smtpctmppath, capsys):
     assert 'Known profiles:\n- simple1\n' == r.out
 
     r = callsmtpc(['-D', 'profiles', 'list'], capsys)
-    assert "Known profiles:\n- simple1 ({'login': 'asd', 'password': '***', 'host': 'localhost', 'port': None, 'ssl': None, 'tls': None, 'connection_timeout': None, 'identify_as': None, 'source_address': None})\n" == r.out
+    assert "Known profiles:\n- simple1 ({'login': 'asd', 'password': '***', 'auth_method': None, 'host': 'localhost', 'port': None, 'ssl': None, 'tls': None, 'connection_timeout': None, 'identify_as': None, 'source_address': None})\n" == r.out
 
     r = callsmtpc(['-DD', 'profiles', 'list'], capsys)
-    assert "Known profiles:\n- simple1 ({'login': 'asd', 'password': 'qwe', 'host': 'localhost', 'port': None, 'ssl': None, 'tls': None, 'connection_timeout': None, 'identify_as': None, 'source_address': None})\n" == r.out
+    assert "Known profiles:\n- simple1 ({'login': 'asd', 'password': 'qwe', 'auth_method': None, 'host': 'localhost', 'port': None, 'ssl': None, 'tls': None, 'connection_timeout': None, 'identify_as': None, 'source_address': None})\n" == r.out

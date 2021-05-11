@@ -25,4 +25,5 @@ DEFAULTS_VALUES_PROFILE = {
     'session_timeout': None,
     'identify_as': None,
     'source_address': None,
+    'auth_method': None,
 }

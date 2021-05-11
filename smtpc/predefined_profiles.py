@@ -5,11 +5,12 @@ from typing import Optional, NoReturn
 import toml
 
 from . import config
+from . import enums
 
 
 class PredefinedProfile:
     __slots__ = (
-        'name', 'login', 'password',
+        'name', 'login', 'password', 'auth_method',
         'host', 'port', 'ssl', 'tls',
         'connection_timeout', 'identify_as', 'source_address',
     )
@@ -18,6 +19,7 @@ class PredefinedProfile:
         name: str, *,
         login: Optional[str] = None,
         password: Optional[str] = None,
+        auth_method: Optional[enums.SMTPAuthMethod] = None,
         host: Optional[str] = None,
         port: Optional[int] = None,
         ssl: Optional[bool] = None,
@@ -29,6 +31,7 @@ class PredefinedProfile:
         self.name = name
         self.login = login
         self.password = password
+        self.auth_method = auth_method
         self.host = host
         self.port = port
         self.ssl = ssl
@@ -71,6 +74,7 @@ class PredefinedProfiles(dict):
                 name=name,
                 login=profile.get('login'),
                 password=profile.get('password'),
+                auth_method=enums.SMTPAuthMethod(profile['auth_method']) if 'auth_method' in profile else None,
                 host=profile.get('host'),
                 port=profile.get('port'),
                 ssl=profile.get('ssl'),

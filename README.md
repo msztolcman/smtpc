@@ -268,6 +268,8 @@ ChangeLog
 * adding `Message-ID` header when building new email message
 * added new sending param: `--disable-ehlo` to forcing using `HELO` (by default `EHLO` is
   used, then `HELO` if first method fails)
+* added new sending and profile param: `--auth-method` to forcing using specified authorization
+  method
 * work with older SMTP servers which handle only `HELO` command (doesn't handle newest `EHLO`)
 * fixed issue where `SMTPc` doesn't send `--identify-as` value when using TLS
 

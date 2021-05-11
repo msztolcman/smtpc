@@ -5,7 +5,7 @@ import pytest
 
 import smtpc
 from smtpc import config
-from smtpc.enums import ContentType, ExitCodes
+from smtpc.enums import ContentType, ExitCodes, SMTPAuthMethod
 from . import *
 
 
@@ -776,3 +776,151 @@ def test_send_disable_ehlo(smtpctmppath, capsys):
         mocked_smtp.helo.assert_called()
         mocked_smtp.ehlo.assert_not_called()
 
+
+
+@pytest.mark.parametrize('profile_params, message_params, send_params, expected',
+    [
+        [
+            [
+                '--host', 'example.net', '--port', '456', '--login', 'some-login', '--password', 'some-password',
+            ],
+            [
+                '--subject', 'some-subject', '--from', 'sender@smtpc.net',
+                '--to', 'receiver@smtpc.net', '--body', 'some\nbody',
+            ],
+            [
+                '--message', 'simple1', '--auth-method', SMTPAuthMethod.PLAIN.value,
+            ],
+            {
+                'auth_method': SMTPAuthMethod.PLAIN.value,
+            }
+        ],
+        [
+            [
+                '--host', 'example.net', '--port', '456', '--login', 'some-login', '--password', 'some-password',
+            ],
+            [
+                '--subject', 'some-subject', '--from', 'sender@smtpc.net',
+                '--to', 'receiver@smtpc.net', '--body', 'some\nbody',
+            ],
+            [
+                '--message', 'simple1', '--auth-method', SMTPAuthMethod.LOGIN.value,
+            ],
+            {
+                'auth_method': SMTPAuthMethod.LOGIN.value,
+            }
+        ],
+        [
+            [
+                '--host', 'example.net', '--port', '456', '--login', 'some-login', '--password', 'some-password',
+            ],
+            [
+                '--subject', 'some-subject', '--from', 'sender@smtpc.net',
+                '--to', 'receiver@smtpc.net', '--body', 'some\nbody',
+            ],
+            [
+                '--message', 'simple1', '--auth-method', SMTPAuthMethod.CRAM_MD5.value,
+            ],
+            {
+                'auth_method': SMTPAuthMethod.CRAM_MD5.value,
+            }
+        ],
+        [
+            [
+                '--host', 'example.net', '--port', '456', '--login', 'some-login', '--password', 'some-password',
+                '--auth-method', SMTPAuthMethod.PLAIN.value,
+            ],
+            [
+                '--subject', 'some-subject', '--from', 'sender@smtpc.net',
+                '--to', 'receiver@smtpc.net', '--body', 'some\nbody',
+            ],
+            [
+                '--message', 'simple1',
+            ],
+            {
+                'auth_method': SMTPAuthMethod.PLAIN.value,
+            }
+        ],
+        [
+            [
+                '--host', 'example.net', '--port', '456', '--login', 'some-login', '--password', 'some-password',
+                '--auth-method', SMTPAuthMethod.LOGIN.value,
+            ],
+            [
+                '--subject', 'some-subject', '--from', 'sender@smtpc.net',
+                '--to', 'receiver@smtpc.net', '--body', 'some\nbody',
+            ],
+            [
+                '--message', 'simple1',
+            ],
+            {
+                'auth_method': SMTPAuthMethod.LOGIN.value,
+            }
+        ],
+        [
+            [
+                '--host', 'example.net', '--port', '456', '--login', 'some-login', '--password', 'some-password',
+                '--auth-method', SMTPAuthMethod.CRAM_MD5.value,
+            ],
+            [
+                '--subject', 'some-subject', '--from', 'sender@smtpc.net',
+                '--to', 'receiver@smtpc.net', '--body', 'some\nbody',
+            ],
+            [
+                '--message', 'simple1',
+            ],
+            {
+                'auth_method': SMTPAuthMethod.CRAM_MD5.value,
+            }
+        ],
+        [
+            [
+                '--host', 'example.net', '--port', '456', '--login', 'some-login', '--password', 'some-password',
+                '--auth-method', SMTPAuthMethod.PLAIN.value,
+            ],
+            [
+                '--subject', 'some-subject', '--from', 'sender@smtpc.net',
+                '--to', 'receiver@smtpc.net', '--body', 'some\nbody',
+            ],
+            [
+                '--message', 'simple1', '--auth-method', SMTPAuthMethod.CRAM_MD5.value,
+            ],
+            {
+                'auth_method': SMTPAuthMethod.CRAM_MD5.value,
+            }
+        ],
+    ],
+    ids=[
+        'auth method (plain) specified when sending',
+        'auth method (login) specified when sending',
+        'auth method (cram_md5) specified when sending',
+        'auth method (plain) specified with profile',
+        'auth method (login) specified with profile',
+        'auth method (cram_md5) specified with profile',
+        'auth method specified in both: profile (plain) and when sending (cram_md5)',
+    ]
+)
+def test_send_auth_method(smtpctmppath, capsys, profile_params, message_params, send_params, expected):
+    r = callsmtpc(['profiles', 'add', 'simple1', *profile_params], capsys)
+    assert r.code == ExitCodes.OK.value, r
+
+    data = load_toml_file(smtpctmppath / config.PREDEFINED_PROFILES_FILE.name)
+    profiles = data['profiles']
+    assert 'simple1' in profiles
+
+    r = callsmtpc(['messages', 'add', 'simple1', '--profile', 'simple1', *message_params], capsys)
+    assert r.code == ExitCodes.OK.value, r
+
+    data = load_toml_file(smtpctmppath / config.PREDEFINED_MESSAGES_FILE.name)
+    messages = data['messages']
+    assert 'simple1' in messages
+
+    with mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class:
+        mocked_smtp = mocked_smtp_class.return_value
+        prepare_smtp_mock(mocked_smtp)
+
+        r = callsmtpc(['send', *send_params], capsys)
+        assert r.code == ExitCodes.OK.value, r
+
+        mocked_smtp.sendmail.assert_called()
+        mocked_smtp.auth.assert_called_with(expected['auth_method'], getattr(mocked_smtp, f'auth_{expected["auth_method"]}'))

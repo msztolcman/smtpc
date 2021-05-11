@@ -5,7 +5,7 @@ import pytest
 
 from smtpc import config
 from smtpc import encryption
-from smtpc.enums import ExitCodes
+from smtpc.enums import ExitCodes, SMTPAuthMethod
 from . import *
 
 
@@ -81,8 +81,8 @@ def test_add_profile_missing_login_password(smtpctmppath, capsys):
         {'login': 'asd', 'password': 'qwe', 'host': '127.0.0.1', 'port': 465}
     ],
     [
-        ['--host', 'localhost', '--connection-timeout', '10', '--source-address', '1.1.1.1', '--identify-as', 'smtpc.net'],
-        {'host': 'localhost', 'connection_timeout': 10, 'source_address': '1.1.1.1', 'identify_as': 'smtpc.net'}
+        ['--host', 'localhost', '--connection-timeout', '10', '--source-address', '1.1.1.1', '--identify-as', 'smtpc.net', '--auth-method', SMTPAuthMethod.PLAIN.value],
+        {'host': 'localhost', 'connection_timeout': 10, 'source_address': '1.1.1.1', 'identify_as': 'smtpc.net', 'auth_method': SMTPAuthMethod.PLAIN.value}
     ],
 ])
 def test_add_profile_valid(smtpctmppath, capsys, params, expected):

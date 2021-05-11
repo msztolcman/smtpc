@@ -16,7 +16,7 @@ import toml.decoder
 from . import __version__
 from . import config
 from . import message
-from .enums import ExitCodes, ContentType
+from .enums import ExitCodes, ContentType, SMTPAuthMethod
 from .errors import SMTPcError
 from .predefined_messages import PredefinedMessages, PredefinedMessage
 from .predefined_profiles import PredefinedProfiles, PredefinedProfile
@@ -35,6 +35,7 @@ PREDEFINED_MESSAGES: Optional[PredefinedMessages] = None
 
 def parse_argv(argv: list) -> argparse.Namespace:
     content_type_choices = [item.lower() for item in ContentType.__members__]
+    auth_method_choices = [item.lower() for item in SMTPAuthMethod.__members__]
     sentinel = object()
     body_params_epilog = textwrap.dedent('''
         BODY:
@@ -109,6 +110,8 @@ def parse_argv(argv: list) -> argparse.Namespace:
 
     p_send.add_argument('--disable-ehlo', action='store_true',
         help='Don\'t use ESMTP EHLO command, only HELO.')
+    p_send.add_argument('--auth-method', choices=auth_method_choices,
+        help='Force to use selected auth method.')
 
     # SEND command - message related stuff
     p_send.add_argument('--subject', '-j',
@@ -191,6 +194,8 @@ def parse_argv(argv: list) -> argparse.Namespace:
         help='Domain used for SMTP identification in EHLO/HELO command.')
     p_profiles_add.add_argument('--source-address',
         help='Source IP address to use when connecting.')
+    p_profiles_add.add_argument('--auth-method', choices=auth_method_choices,
+        help='Force to use selected auth method.')
 
     # MESSAGES command
     p_messages = sub.add_parser('messages', aliases=['m'], help='Manage saved messages.')
@@ -267,6 +272,9 @@ def parse_argv(argv: list) -> argparse.Namespace:
 
         if (args.login and not args.password) or (not args.login and args.password):
             parser.error("Required both or none: --login, --password")
+
+        if args.auth_method:
+            args.auth_method = SMTPAuthMethod(args.auth_method)
 
     def setup_message_args(args: argparse.Namespace) -> NoReturn:
         if args.command == 'send' and not getattr(args, 'message', False) and not args.envelope_from and not args.address_from:
@@ -415,6 +423,7 @@ class ProfilesCommand(AbstractCommand):
             connection_timeout=self.args.connection_timeout,
             identify_as=self.args.identify_as,
             source_address=self.args.source_address,
+            auth_method=self.args.auth_method,
         ))
         logger.info('Profile saved', profile=self.args.name[0])
 
@@ -591,6 +600,7 @@ class SendCommand(AbstractCommand):
                 no_tls=self.args.no_tls,
                 dry_run=self.args.dry_run,
                 disable_ehlo=self.args.disable_ehlo,
+                auth_method=self.args.auth_method,
             )
             receivers = send_message.execute()
         except (smtplib.SMTPSenderRefused, smtplib.SMTPAuthenticationError) as exc:
