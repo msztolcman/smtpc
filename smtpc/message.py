@@ -346,6 +346,7 @@ class Sender:
         'envelope_to', 'address_to', 'address_cc', 'address_bcc', 'reply_to',
         'message_body', 'predefined_profile', 'predefined_message',
         'debug_level', 'dry_run',
+        'disable_ehlo',
     )
 
     def __init__(self, *,
@@ -373,10 +374,12 @@ class Sender:
         predefined_profile: Optional[PredefinedProfile],
         predefined_message: Optional[PredefinedMessage],
         dry_run: Optional[bool],
+        disable_ehlo: Optional[bool],
     ) -> NoReturn:
         self.debug_level = debug_level
         self.message_body = message_body
         self.dry_run = dry_run
+        self.disable_ehlo = disable_ehlo
 
         if predefined_profile:
             logger.debug('using connection details from predefined profile', profile=predefined_profile.name)
@@ -456,12 +459,12 @@ class Sender:
             exitc(ExitCodes.CONNECTION_ERROR)
 
         # HACK: smtp.ehlo_or_helo_if_needed doesn't recognize `name` argument from smtp.ehlo/helo
-        self.smtp_ehlo_or_helo_if_needed(smtp, self.identify_as)
+        self.smtp_ehlo_or_helo_if_needed(smtp, self.identify_as, self.disable_ehlo)
 
         if self.tls:
             logger.debug('upgrading connection to tls')
             smtp.starttls()
-            self.smtp_ehlo_or_helo_if_needed(smtp, self.identify_as)
+            self.smtp_ehlo_or_helo_if_needed(smtp, self.identify_as, self.disable_ehlo)
 
         if self.login and self.password:
             logger.debug('calling login, will authorize when required', login=self.login)
@@ -489,9 +492,9 @@ class Sender:
 
         return senders
 
-    def smtp_ehlo_or_helo_if_needed(self, smtp: smtplib.SMTP, name: str = '') -> NoReturn:
+    def smtp_ehlo_or_helo_if_needed(self, smtp: smtplib.SMTP, name: str = '', disable_ehlo: bool = False) -> NoReturn:
         if smtp.helo_resp is None and smtp.ehlo_resp is None:
-            if not (200 <= smtp.ehlo(name)[0] <= 299):
+            if disable_ehlo or not (200 <= smtp.ehlo(name)[0] <= 299):
                 (code, resp) = smtp.helo(name)
                 if not (200 <= code <= 299):
                     raise smtplib.SMTPHeloError(code, resp)

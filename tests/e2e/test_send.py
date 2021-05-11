@@ -759,3 +759,20 @@ def test_send_interactive_password(smtpctmppath, capsys):
         mocked_smtp.login.assert_called()
         smtp_login_args = mocked_smtp.login.call_args.args
         assert smtp_login_args == ('asd', 'pass')
+
+
+def test_send_disable_ehlo(smtpctmppath, capsys):
+    with \
+        mock.patch('smtplib.SMTP', autospec=True) as mocked_smtp_class\
+    :
+        mocked_smtp = mocked_smtp_class.return_value
+        prepare_smtp_mock(mocked_smtp)
+        mocked_smtp.helo.return_value = [250, 'mocked']
+        r = callsmtpc(['send', '--from', 'sender@smtpc.net', '--to', 'receiver@smtpc.net',
+            '--login', 'asd', '--password', 'aaa', '--disable-ehlo'], capsys)
+        assert r.code == ExitCodes.OK.value, r
+
+        mocked_smtp_class.assert_called()
+        mocked_smtp.helo.assert_called()
+        mocked_smtp.ehlo.assert_not_called()
+

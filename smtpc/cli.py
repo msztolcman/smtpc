@@ -107,6 +107,9 @@ def parse_argv(argv: list) -> argparse.Namespace:
     p_send.add_argument('--source-address',
         help='Source IP address to use when connecting.')
 
+    p_send.add_argument('--disable-ehlo', action='store_true',
+        help='Don\'t use ESMTP EHLO command, only HELO.')
+
     # SEND command - message related stuff
     p_send.add_argument('--subject', '-j',
         help='Subject for email.')
@@ -587,6 +590,7 @@ class SendCommand(AbstractCommand):
                 no_ssl=self.args.no_ssl,
                 no_tls=self.args.no_tls,
                 dry_run=self.args.dry_run,
+                disable_ehlo=self.args.disable_ehlo,
             )
             receivers = send_message.execute()
         except (smtplib.SMTPSenderRefused, smtplib.SMTPAuthenticationError) as exc:
