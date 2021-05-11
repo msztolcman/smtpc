@@ -270,6 +270,7 @@ ChangeLog
   used, then `HELO` if first method fails)
 * added new sending and profile param: `--auth-method` to forcing using specified authorization
   method
+* added new sending param: `--message-dump' to dumping built mime message to STDOUT
 * work with older SMTP servers which handle only `HELO` command (doesn't handle newest `EHLO`)
 * fixed issue where `SMTPc` doesn't send `--identify-as` value when using TLS
 

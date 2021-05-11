@@ -153,6 +153,8 @@ def parse_argv(argv: list) -> argparse.Namespace:
     p_send.add_argument('--message-interactive', action='store_true',
         help='Just after creating raw message open editor with raw message body. '
              'Allow to edit and send modified version.')
+    p_send.add_argument('--message-dump', action='store_true',
+        help='Dump built message body on stdout.')
 
     # PROFILES command
     p_profiles = sub.add_parser('profiles', aliases=['p'], help="Manage connection profiles.")
@@ -567,6 +569,12 @@ class SendCommand(AbstractCommand):
 
         if self.args.message_interactive:
             message_body = self._message_interactive(message_body)
+
+        if self.args.message_dump:
+            import textwrap
+            print('-------- Message body start:')
+            print(textwrap.indent(message_body, '  '))
+            print('-------- Message body end.')
 
         password_key = None
         if profile and self.args.password is None and profile.password and profile.password.startswith('enc:'):
