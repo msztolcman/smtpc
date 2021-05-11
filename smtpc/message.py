@@ -500,7 +500,7 @@ class Sender:
                 if not (200 <= code <= 299):
                     raise smtplib.SMTPHeloError(code, resp)
 
-    def smtp_login(self, smtp: smtplib.SMTP, login: str, password: str, auth_method: SMTPAuthMethod = SMTPAuthMethod.DEFAULT):
+    def smtp_login(self, smtp: smtplib.SMTP, login: str, password: str, auth_method: SMTPAuthMethod = SMTPAuthMethod.DEFAULT) -> NoReturn:
         if auth_method in (SMTPAuthMethod.LOGIN, SMTPAuthMethod.PLAIN, SMTPAuthMethod.CRAM_MD5):
             logger.debug(f'authorization method forced to {auth_method}', login=self.login)
             # HACK: of not calling smtp.login, then these properties must be set manually
