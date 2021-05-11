@@ -78,7 +78,7 @@ class SmtpDebugPrinter:
             self.fore_red = ''
             self.fore_reset = ''
 
-    def print(self, args: List[Any], file: io.FileIO = sys.stderr) -> NoReturn:
+    def print(self, args: Union[Tuple[Any], List[Any]], file: io.FileIO = sys.stderr) -> NoReturn:
         if len(args) == 1 and args[0].startswith(('send:', 'reply:', 'data:')):
             return
         if args[0].startswith('connect:'):
@@ -436,7 +436,7 @@ class Sender:
                 smtp = smtplib.SMTP(timeout=self.connection_timeout, source_address=self.source_address)
 
         if self.dry_run:
-            return
+            return []
 
         smtp.set_debuglevel(1)
         if self.debug_level > 1:
