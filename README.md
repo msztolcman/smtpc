@@ -266,7 +266,8 @@ ChangeLog
   it to server
 * predefined message can now have attached default profile
   that will be used when sending
-* adding `Date` header when building new email message
+* adding `Date` header when building new email message, and there is no custom
+  `Date` specified using `--header` param
 * adding `Message-ID` header when building new email message, and there is no custom
   `Message-ID` specified using `--header` param
 * added new sending param: `--disable-ehlo` to forcing using `HELO` (by default `EHLO` is
