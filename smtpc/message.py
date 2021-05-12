@@ -516,9 +516,9 @@ class Sender:
         envelope_from = self.envelope_from or self.address_from
         envelope_to = self.envelope_to or (self.address_to + self.address_cc + self.address_bcc)
 
-        body = getattr(self.message_body, 'as_string', lambda: self.message_body)
+        get_body = getattr(self.message_body, 'as_string', lambda: self.message_body)
         try:
-            rejects = smtp.sendmail(envelope_from, envelope_to, body())
+            rejects = smtp.sendmail(envelope_from, envelope_to, get_body())
             logger.debug('message sent', recipients=envelope_from, rejects=rejects or None)
         except smtplib.SMTPSenderRefused as exc:
             self.log_exception(exc.smtp_error.decode(), smtp_code=exc.smtp_code)
