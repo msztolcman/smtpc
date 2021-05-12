@@ -153,6 +153,8 @@ def parse_argv(argv: list) -> argparse.Namespace:
     p_send.add_argument('--message-interactive', action='store_true',
         help='Just after creating raw message open editor with raw message body. '
              'Allow to edit and send modified version.')
+    p_send.add_argument('--smtp-interactive', action='store_true',
+        help='Makes SMTP session interactive, allow to view and edit every SMTP command.')
     p_send.add_argument('--message-dump', action='store_true',
         help='Dump built message body on stdout.')
 
@@ -608,6 +610,7 @@ class SendCommand(AbstractCommand):
                 dry_run=self.args.dry_run,
                 disable_ehlo=self.args.disable_ehlo,
                 auth_method=self.args.auth_method,
+                smtp_interactive=self.args.smtp_interactive,
             )
             receivers = send_message.execute()
         except (smtplib.SMTPSenderRefused, smtplib.SMTPAuthenticationError) as exc:

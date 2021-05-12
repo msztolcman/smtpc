@@ -3,6 +3,7 @@ __all__ = ['Builder', 'Sender']
 import copy
 import email
 import email.utils
+import importlib
 import io
 import json
 import os
@@ -146,6 +147,42 @@ class SmtpDebugPrinter:
 class empty:  # noqa: N801
     def __getattr__(self, item: Any) -> None:
         return None
+
+
+class _interactive_socket:
+    def __init__(self, sock):
+        self._sock = sock
+        try:
+            self.readline = importlib.import_module('readline')
+        except ModuleNotFoundError:
+            self.readline = None
+        self._sock_sendall = self._sock_sendall_readline if self.readline else self._sock_sendall_plain
+
+    def __getattr__(self, item):
+        if item == 'sendall':
+            o = self._sock_sendall
+        else:
+            o = getattr(self._sock, item)
+        return o
+
+    def _sock_sendall_plain(self, s: bytes):
+        print(f"> {s.decode()[:-2]}")
+        data = input("? ").strip()
+        if data != '':
+            s = f"{data}{smtplib.CRLF}".encode()
+        return self._sock.sendall(s)
+
+    def _sock_sendall_readline(self, s: bytes):
+        self.readline.clear_history()
+        self.readline.set_startup_hook(lambda: self.readline.insert_text(s.decode()[:-2]))
+        try:
+            data = input("> ")
+        finally:
+            self.readline.set_startup_hook()
+
+        if data != '':
+            s = f"{data}{smtplib.CRLF}".encode()
+        return self._sock.sendall(s)
 
 
 class Builder:
@@ -346,7 +383,7 @@ class Sender:
         'envelope_to', 'address_to', 'address_cc', 'address_bcc', 'reply_to',
         'message_body', 'predefined_profile', 'predefined_message',
         'debug_level', 'dry_run',
-        'disable_ehlo', 'auth_method',
+        'disable_ehlo', 'auth_method', 'smtp_interactive',
     )
 
     def __init__(self, *,
@@ -376,11 +413,13 @@ class Sender:
         dry_run: Optional[bool],
         disable_ehlo: Optional[bool],
         auth_method: Optional[SMTPAuthMethod],
+        smtp_interactive: Optional[bool],
     ) -> NoReturn:
         self.debug_level = debug_level
         self.message_body = message_body
         self.dry_run = dry_run
         self.disable_ehlo = disable_ehlo
+        self.smtp_interactive = smtp_interactive
 
         if predefined_profile:
             logger.debug('using connection details from predefined profile', profile=predefined_profile.name)
@@ -438,7 +477,7 @@ class Sender:
         if self.dry_run:
             return []
 
-        smtp.set_debuglevel(1)
+        smtp.set_debuglevel(1)  # noqa
         if self.debug_level > 1:
             smtp_debug_printer = SmtpDebugPrinter()
 
@@ -459,6 +498,9 @@ class Sender:
         except Exception as exc:
             self.log_exception('connection error', host=self.host, port=self.port, message=str(exc), exception=exc.__class__.__name__)
             exitc(ExitCodes.CONNECTION_ERROR)
+
+        if self.smtp_interactive:
+            smtp.sock = _interactive_socket(smtp.sock)
 
         # HACK: smtp.ehlo_or_helo_if_needed doesn't recognize `name` argument from smtp.ehlo/helo
         self.smtp_ehlo_or_helo_if_needed(smtp, self.identify_as, self.disable_ehlo)

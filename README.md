@@ -262,6 +262,8 @@ ChangeLog
 
 ### v0.10.0
 
+* interactive SMTP session: allows to view and edit every SMTP command before sending
+  it to server
 * predefined message can now have attached default profile
   that will be used when sending
 * adding `Date` header when building new email message
