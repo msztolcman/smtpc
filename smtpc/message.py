@@ -308,7 +308,8 @@ class Builder:
             header_name, header_value = header.split('=', 1)
             message[header_name.strip()] = header_value.strip()
 
-        message['Message-ID'] = f'<{uuid.uuid4()}@smtpc>'
+        if 'Message-ID' not in message:
+            message['Message-ID'] = f'<{uuid.uuid4()}@smtpc>'
 
         if self.subject:
             message['Subject'] = self.template(self.subject)
