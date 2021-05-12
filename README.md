@@ -27,18 +27,18 @@ Features
 --------
 
 * Predefined profiles for use with many SMTP servers
-* Predefined messages for sending messages just by referencing the message name
+* Predefined messages (with templates!) for sending messages just by referencing the message name
 * Automatically build message from given parameters, do not glue headers manually
-* Store passwords in an encrypted form (optionally)
-* Ability to edit raw message body just before sending
-* Templating system customizing messages (with Jinja2)
+* Passwords stored in an encrypted form (optionally)
+* Edit raw message body just before sending
+* Interactive SMTP session
 * Clean and readable SMTP session logs (if enabled). Especially with
   [colorama](https://pypi.org/project/colorama/) module (available by default in
   `smtpc[extended]` version)!
 * SSL and TLS connections, of course
 * You can easily spoof your own messages, by specifying other sender/recipient in
   message headers, and other one for SMTP session
-* Easily add custom email headers
+* Custom email headers
 * If you have multiple IP addresses available, choose which one you want to use
 * It's all Python!
 
@@ -61,7 +61,7 @@ then start with:
 You can also use [pipx](https://pipxproject.github.io/pipx/) if you don't want to
 mess with system packages and install `SMTPc` in virtual environment:
 
-    pipx install smtpc
+    pipx install 'smtpc[extended]'
 
 Voila!
 
