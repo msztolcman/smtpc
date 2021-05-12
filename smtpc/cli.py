@@ -573,10 +573,13 @@ class SendCommand(AbstractCommand):
             message_body = self._message_interactive(message_body)
 
         if self.args.message_dump:
+            tmp_message_body = message_body.as_string() if hasattr(message_body, 'as_string') else message_body
+
             import textwrap
-            print('-------- Message body start:')
-            print(textwrap.indent(message_body, '  '))
-            print('-------- Message body end.')
+            print('-------- Message body start:', file=sys.stderr)
+            print(textwrap.indent(tmp_message_body, '  '), file=sys.stderr)
+            print('-------- Message body end.', file=sys.stderr)
+            del tmp_message_body
 
         password_key = None
         if profile and self.args.password is None and profile.password and profile.password.startswith('enc:'):
