@@ -149,8 +149,8 @@ class empty:  # noqa: N801
         return None
 
 
-class _interactive_socket:
-    def __init__(self, sock):
+class _interactive_socket:  # noqa: N801
+    def __init__(self, sock: socket.socket) -> NoReturn:
         self._sock = sock
         try:
             self.readline = importlib.import_module('readline')
@@ -158,21 +158,21 @@ class _interactive_socket:
             self.readline = None
         self._sock_sendall = self._sock_sendall_readline if self.readline else self._sock_sendall_plain
 
-    def __getattr__(self, item):
+    def __getattr__(self, item: str) -> Any:
         if item == 'sendall':
             o = self._sock_sendall
         else:
             o = getattr(self._sock, item)
         return o
 
-    def _sock_sendall_plain(self, s: bytes):
+    def _sock_sendall_plain(self, s: bytes) -> NoReturn:
         print(f"> {s.decode()[:-2]}")
         data = input("? ").strip()
         if data != '':
             s = f"{data}{smtplib.CRLF}".encode()
-        return self._sock.sendall(s)
+        self._sock.sendall(s)
 
-    def _sock_sendall_readline(self, s: bytes):
+    def _sock_sendall_readline(self, s: bytes) -> NoReturn:
         self.readline.clear_history()
         self.readline.set_startup_hook(lambda: self.readline.insert_text(s.decode()[:-2]))
         try:
@@ -182,7 +182,7 @@ class _interactive_socket:
 
         if data != '':
             s = f"{data}{smtplib.CRLF}".encode()
-        return self._sock.sendall(s)
+        self._sock.sendall(s)
 
 
 class Builder:
@@ -516,6 +516,7 @@ class Sender:
         envelope_from = self.envelope_from or self.address_from
         envelope_to = self.envelope_to or (self.address_to + self.address_cc + self.address_bcc)
 
+        rejects = None
         get_body = getattr(self.message_body, 'as_string', lambda: self.message_body)
         try:
             rejects = smtp.sendmail(envelope_from, envelope_to, get_body())
