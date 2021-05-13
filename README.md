@@ -163,7 +163,7 @@ For example, if you specify the subject as:
 and when sending you provide a value:
 
 ```
---template-field "date=$(date +"%Y-%m-%dT%H:%M:%S%Z")"
+--template-field "date=$(date +'%Y-%m-%dT%H:%M:%S%Z')"
 ```
 
 then in the final email it will look like:
