@@ -7,14 +7,19 @@ SMTPc
 [![Downloads](https://static.pepy.tech/personalized-badge/smtpc?period=total&units=international_system&left_color=grey&right_color=yellow&left_text=Downloads)](https://pepy.tech/project/smtpc)
 [![say thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/marcin%40urzenia.net)
 
-`SMTPc` is a simple SMTP client for easy mail sending using CLI. It's dedicated
-for developers, however it's easy to use and every CLI user will be satisfied
-using this.
+`SMTPc` is simple but powerfull SMTP client for sending emails using CLI.
+It's dedicated for system admins or developers, however it's easy to use
+and every CLI user will be satisfied using this.
 
-The main purpose of `SMTPc` is to help developers test and/or verify SMTP servers or
-their SMTP configuration. Of course, it can be used in every place you want
-to automate any system, and use predefined messages (with templates) for
-notifications, like daemons or crons.
+`SMTPc` will be useful when:
+- you have to send emails from automated systems (like crons, i.e. some kinds of
+  reports, notifications from NAS etc)
+- you are sending emails with specified structure and content, where only
+  data is changing (templates)
+- you want to send messages using your SMTP provider without worrying about storing
+  or passing credentials
+- you need a tool that will help you debug SMTP session to your SMTP server (interactive
+  session, clean debugs)
 
 If you like this tool, just [say thanks](https://saythanks.io/to/marcin%40urzenia.net).
 
